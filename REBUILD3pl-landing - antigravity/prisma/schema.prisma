@@ -1,0 +1,688 @@
+// WMS Comprehensive Schema - Event Sourced Architecture
+// Based on enterprise WMS requirements with audit trails, projections, and scalability
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CORE ENTITIES
+// ============================================================================
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  tenantId    String   @unique
+  complianceDomain ComplianceDomain @default(OPERATIONAL)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sites       Warehouse[]
+  users       User[]
+  customers   Customer[]
+  suppliers   Supplier[]
+  items       Item[]
+  workOrders  WorkOrder[]
+
+  @@map("organizations")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  organizationId String
+  email       String   @unique
+  name        String
+  role        UserRole
+  isActive    Boolean  @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  auditEvents  AuditEvent[]
+  tasks        WarehouseTask[]
+
+  @@map("users")
+}
+
+model Warehouse {
+  id          String   @id @default(cuid())
+  organizationId String
+  name        String
+  code        String
+  address     String
+  dimensions  Json     // {length, width, height}
+  timezone    String    @default("UTC")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  zones        Zone[]
+  docks        DockDoor[]
+  racks        Rack[]
+  bins         Bin[]
+  inventory    Inventory[]
+  tasks        WarehouseTask[]
+  orders       Order[]
+  shipments    Shipment[]
+
+  @@map("warehouse_sites")
+}
+
+// ============================================================================
+// LOCATION HIERARCHY
+// ============================================================================
+
+model Zone {
+  id          String   @id @default(cuid())
+  siteId      String
+  name        String
+  type        ZoneType
+  coordinates Json     // {x, y, z, width, height, depth}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  aisles      Aisle[]
+
+  @@map("zones")
+}
+
+model Aisle {
+  id          String   @id @default(cuid())
+  zoneId      String
+  name        String
+  coordinates Json     // {x, y, z, width, height, depth}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  zone        Zone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  bays        Bay[]
+
+  @@map("aisles")
+}
+
+model Bay {
+  id          String   @id @default(cuid())
+  aisleId     String
+  name        String
+  coordinates Json     // {x, y, z, width, height, depth}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  aisle       Aisle @relation(fields: [aisleId], references: [id], onDelete: Cascade)
+  levels      Level[]
+
+  @@map("bays")
+}
+
+model Level {
+  id          String   @id @default(cuid())
+  bayId       String
+  name        String
+  height      Float
+  coordinates Json     // {x, y, z, width, height, depth}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  bay         Bay @relation(fields: [bayId], references: [id], onDelete: Cascade)
+  slots       Slot[]
+
+  @@map("levels")
+}
+
+model Slot {
+  id          String   @id @default(cuid())
+  levelId     String
+  name        String
+  coordinates Json     // {x, y, z, width, height, depth}
+  capacity    Json     // {maxWeight, maxVolume, maxHeight, mixRules}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  level       Level @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  bins        Bin[]
+
+  @@map("slots")
+}
+
+model Bin {
+  id          String   @id @default(cuid())
+  slotId      String
+  siteId      String
+  name        String
+  coordinates Json     // {x, y, z, width, height, depth}
+  capacity    Json     // {maxWeight, maxVolume, maxHeight, mixRules}
+  status      BinStatus @default(AVAILABLE)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  slot        Slot @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  inventory   Inventory[]
+
+  @@map("bins")
+}
+
+// ============================================================================
+// INVENTORY & ITEMS
+// ============================================================================
+
+model Item {
+  id          String   @id @default(cuid())
+  organizationId String
+  sku         String
+  name        String   @default("") // Added default to match code usage
+  description String?
+  dimensions  Json?    // {length, width, height, weight}
+  attributes  Json?    // {hazmat, temperature, expiry, ABC class, UOMs, EAN/UPC}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inventory   Inventory[]
+  orderLines  OrderLine[]
+  bomComponents BOMComponent[]
+  boms        BOM[] // Items that are products of a BOM
+  workOrderItems WorkOrderItem[]
+
+  @@unique([organizationId, sku])
+  @@map("items")
+}
+
+model Inventory {
+  id          String   @id @default(cuid())
+  siteId      String
+  locationId  String
+  itemId      String
+  quantity    Int
+  lotNumber   String?
+  serialNumber String?
+  expiryDate  DateTime?
+  status      InventoryStatus @default(AVAILABLE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  location    Bin       @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  item        Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  movements   InventoryMovement[]
+
+  @@unique([siteId, locationId, itemId, lotNumber, serialNumber])
+  @@map("inventory_items")
+}
+
+model InventoryMovement {
+  id          String   @id @default(cuid())
+  inventoryId String
+  type        MovementType
+  quantity    Int
+  reason      String?
+  reference   String?  // Order ID, Task ID, etc.
+  createdAt   DateTime @default(now())
+
+  // Relations
+  inventory   Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@map("inventory_movements")
+}
+
+// ============================================================================
+// ORDERS & FULFILLMENT
+// ============================================================================
+
+model Order {
+  id          String   @id @default(cuid())
+  siteId      String
+  customerId  String
+  orderNumber String
+  status      OrderStatus @default(PENDING)
+  priority    OrderPriority @default(NORMAL)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  lines       OrderLine[]
+  tasks       WarehouseTask[]
+  shipments   Shipment[]
+
+  @@map("orders")
+}
+
+model OrderLine {
+  id          String   @id @default(cuid())
+  orderId     String
+  itemId      String
+  quantity    Int
+  allocated   Int      @default(0)
+  picked      Int      @default(0)
+  shipped     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  order       Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  item        Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@map("order_lines")
+}
+
+// ============================================================================
+// WAREHOUSE OPERATIONS
+// ============================================================================
+
+model WarehouseTask {
+  id          String   @id @default(cuid())
+  siteId      String
+  orderId     String?
+  assignedUserId String?
+  type        TaskType
+  status      TaskStatus @default(PENDING)
+  priority    TaskPriority @default(NORMAL)
+  details     Json?     // Task-specific data
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  order       Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  assignedUser User? @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+
+  @@map("warehouse_tasks")
+}
+
+model DockDoor {
+  id          String   @id @default(cuid())
+  siteId      String
+  name        String
+  type        DockType
+  status      DockStatus @default(AVAILABLE)
+  coordinates Json?     // {x, y, z, width, height, depth}
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@map("dock_doors")
+}
+
+model Rack {
+    id          String   @id @default(cuid())
+    siteId      String
+    name        String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+}
+
+// ============================================================================
+// SHIPPING & LOGISTICS
+// ============================================================================
+
+model Shipment {
+  id          String   @id @default(cuid())
+  siteId      String
+  orderId     String?
+  carrierId   String?
+  trackingNumber String?
+  status      ShipmentStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  site        Warehouse @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  order       Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  carrier     Carrier? @relation(fields: [carrierId], references: [id], onDelete: SetNull)
+
+  @@map("shipments")
+}
+
+model Carrier {
+  id          String   @id @default(cuid())
+  name        String
+  code        String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  shipments   Shipment[]
+
+  @@map("carriers")
+}
+
+// ============================================================================
+// CUSTOMERS & SUPPLIERS
+// ============================================================================
+
+model Customer {
+  id          String   @id @default(cuid())
+  organizationId String
+  name        String
+  code        String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@map("customers")
+}
+
+model Supplier {
+  id          String   @id @default(cuid())
+  organizationId String
+  name        String
+  code        String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("suppliers")
+}
+
+// ============================================================================
+// MANUFACTURING (Work Orders & BOM)
+// ============================================================================
+
+model BOM {
+  id          String   @id @default(cuid())
+  productId   String
+  name        String
+  version     String   @default("1.0")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  product     Item     @relation(fields: [productId], references: [id])
+  components  BOMComponent[]
+  workOrders  WorkOrder[]
+
+  @@map("boms")
+}
+
+model BOMComponent {
+  id          String   @id @default(cuid())
+  bomId       String
+  itemId      String
+  quantity    Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  bom         BOM      @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  item        Item     @relation(fields: [itemId], references: [id])
+
+  @@map("bom_components")
+}
+
+model WorkOrder {
+  id             String   @id @default(cuid())
+  organizationId String
+  woNumber       String   @unique
+  bomId          String?
+  quantity       Float
+  priority       String   @default("normal")
+  status         String   @default("planned")
+  plannedStart   DateTime?
+  plannedEnd     DateTime?
+  actualStart    DateTime?
+  actualEnd      DateTime?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  bom            BOM?         @relation(fields: [bomId], references: [id])
+  items          WorkOrderItem[]
+
+  @@map("work_orders")
+}
+
+model WorkOrderItem {
+  id          String   @id @default(cuid())
+  workOrderId String
+  itemId      String
+  sku         String
+  description String?
+  quantity    Float
+  consumedQty Float    @default(0)
+  producedQty Float    @default(0)
+  type        String   // 'input' | 'output'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  workOrder   WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  item        Item      @relation(fields: [itemId], references: [id])
+
+  @@map("work_order_items")
+}
+
+
+// ============================================================================
+// EVENT SOURCING & AUDIT
+// ============================================================================
+
+model EventStore {
+  id          String   @id @default(cuid())
+  aggregateId String
+  eventType   String
+  eventData   Json
+  version     Int
+  timestamp   DateTime @default(now())
+  actorId     String
+  tenantId    String
+
+  @@index([aggregateId, version])
+  @@index([eventType, timestamp])
+  @@map("event_store")
+}
+
+model AuditEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String
+  resource    String
+  resourceId  String
+  details     Json
+  ipAddress   String?
+  userAgent   String?
+  timestamp   DateTime @default(now())
+
+  // Relations
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+  @@index([resource, resourceId])
+  @@map("audit_events")
+}
+
+// ============================================================================
+// PROJECTIONS (READ MODELS)
+// ============================================================================
+
+model InventoryProjection {
+  id          String   @id @default(cuid())
+  siteId      String
+  binId       String
+  itemId      String
+  quantity    Int
+  status      InventoryStatus
+  lastUpdated DateTime @default(now())
+
+  @@unique([siteId, binId, itemId])
+  @@map("inventory_projections")
+}
+
+model TaskProjection {
+  id          String   @id @default(cuid())
+  siteId      String
+  type        TaskType
+  status      TaskStatus
+  priority    TaskPriority
+  count       Int
+  lastUpdated DateTime @default(now())
+
+  @@unique([siteId, type, status])
+  @@map("task_projections")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum ComplianceDomain {
+  OPERATIONAL
+  GXP
+  ITAR
+  SOX
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  SUPERVISOR
+  OPERATOR
+  VIEWER
+}
+
+enum ZoneType {
+  RECEIVING
+  STORAGE
+  PICKING
+  PACKING
+  SHIPPING
+  STAGING
+}
+
+enum BinStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  BLOCKED
+  MAINTENANCE
+}
+
+enum InventoryStatus {
+  AVAILABLE
+  RESERVED
+  ALLOCATED
+  PICKED
+  SHIPPED
+  DAMAGED
+  QUARANTINE
+  HOLD
+}
+
+enum MovementType {
+  RECEIPT
+  ADJUSTMENT
+  TRANSFER
+  PICK
+  PUTAWAY
+  CYCLE_COUNT
+  DAMAGE
+  RETURN
+}
+
+enum OrderStatus {
+  PENDING
+  ALLOCATED
+  PICKING
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum OrderPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TaskType {
+  RECEIVING
+  PUTAWAY
+  PICKING
+  PACKING
+  SHIPPING
+  CYCLE_COUNT
+  REPLENISHMENT
+  TRANSFER
+}
+
+enum TaskStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  FAILED
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum DockType {
+  INBOUND
+  OUTBOUND
+  MIXED
+}
+
+enum DockStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+enum ShipmentStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  EXCEPTION
+  RETURNED
+}
