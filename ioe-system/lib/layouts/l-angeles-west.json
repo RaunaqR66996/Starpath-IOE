@@ -1,0 +1,783 @@
+{
+    "site": {
+        "width": 500,
+        "depth": 350
+    },
+    "zones": [
+        {
+            "id": "staging-zone",
+            "label": "Staging Zone",
+            "x": 250,
+            "z": 310,
+            "width": 480,
+            "depth": 60,
+            "color": "#3b82f640"
+        },
+        {
+            "id": "storage-zone",
+            "label": "Storage Zone",
+            "x": 250,
+            "z": 140,
+            "width": 480,
+            "depth": 260,
+            "color": "#22c55e40"
+        }
+    ],
+    "walls": [
+        {
+            "id": "wall-north",
+            "x": 250,
+            "z": 0.5,
+            "width": 1,
+            "height": 40,
+            "length": 500,
+            "rotationY": 0,
+            "color": "#6b7280"
+        },
+        {
+            "id": "wall-south",
+            "x": 250,
+            "z": 349.5,
+            "width": 1,
+            "height": 40,
+            "length": 500,
+            "rotationY": 0,
+            "color": "#6b7280"
+        },
+        {
+            "id": "wall-west",
+            "x": 0.5,
+            "z": 175,
+            "width": 1,
+            "height": 40,
+            "length": 350,
+            "rotationY": 1.5708,
+            "color": "#6b7280"
+        },
+        {
+            "id": "wall-east",
+            "x": 499.5,
+            "z": 175,
+            "width": 1,
+            "height": 40,
+            "length": 350,
+            "rotationY": 1.5708,
+            "color": "#6b7280"
+        }
+    ],
+    "columns": [
+        {
+            "id": "col-1-1",
+            "x": 50,
+            "z": 50,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-1-2",
+            "x": 130,
+            "z": 50,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-1-3",
+            "x": 210,
+            "z": 50,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-1-4",
+            "x": 290,
+            "z": 50,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-1-5",
+            "x": 370,
+            "z": 50,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-1-6",
+            "x": 450,
+            "z": 50,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-2-1",
+            "x": 50,
+            "z": 125,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-2-2",
+            "x": 130,
+            "z": 125,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-2-3",
+            "x": 210,
+            "z": 125,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-2-4",
+            "x": 290,
+            "z": 125,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-2-5",
+            "x": 370,
+            "z": 125,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-2-6",
+            "x": 450,
+            "z": 125,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-3-1",
+            "x": 50,
+            "z": 200,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-3-2",
+            "x": 130,
+            "z": 200,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-3-3",
+            "x": 210,
+            "z": 200,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-3-4",
+            "x": 290,
+            "z": 200,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-3-5",
+            "x": 370,
+            "z": 200,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-3-6",
+            "x": 450,
+            "z": 200,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-4-1",
+            "x": 50,
+            "z": 275,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-4-2",
+            "x": 130,
+            "z": 275,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-4-3",
+            "x": 210,
+            "z": 275,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-4-4",
+            "x": 290,
+            "z": 275,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-4-5",
+            "x": 370,
+            "z": 275,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        },
+        {
+            "id": "col-4-6",
+            "x": 450,
+            "z": 275,
+            "radius": 1.5,
+            "height": 40,
+            "color": "#78716c"
+        }
+    ],
+    "dockDoors": [
+        {
+            "id": "d-1",
+            "x": 40,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-2",
+            "x": 80,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-3",
+            "x": 120,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-4",
+            "x": 160,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-5",
+            "x": 200,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-6",
+            "x": 240,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-7",
+            "x": 280,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-8",
+            "x": 320,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-9",
+            "x": 360,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-10",
+            "x": 400,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d-11",
+            "x": 440,
+            "y": 0,
+            "z": 350,
+            "width": 1,
+            "height": 14,
+            "length": 14,
+            "zone": "outbound"
+        }
+    ],
+    "stagingLanes": [
+        {
+            "id": "sl-1",
+            "x": 40,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "READY"
+        },
+        {
+            "id": "sl-2",
+            "x": 80,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "FILLING"
+        },
+        {
+            "id": "sl-3",
+            "x": 120,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl-4",
+            "x": 160,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "DISPATCHED"
+        },
+        {
+            "id": "sl-5",
+            "x": 200,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "READY"
+        },
+        {
+            "id": "sl-6",
+            "x": 240,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl-7",
+            "x": 280,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl-8",
+            "x": 320,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl-9",
+            "x": 360,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl-10",
+            "x": 400,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl-11",
+            "x": 440,
+            "y": 0,
+            "z": 310,
+            "length": 14,
+            "width": 25,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        }
+    ],
+    "racks": [
+        {
+            "id": "R1-A1",
+            "x": 40,
+            "y": 0,
+            "z": 50,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R1-A2",
+            "x": 110,
+            "y": 0,
+            "z": 50,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R1-A3",
+            "x": 180,
+            "y": 0,
+            "z": 50,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R1-A4",
+            "x": 250,
+            "y": 0,
+            "z": 50,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R1-A5",
+            "x": 320,
+            "y": 0,
+            "z": 50,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R1-A6",
+            "x": 390,
+            "y": 0,
+            "z": 50,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R1-A7",
+            "x": 460,
+            "y": 0,
+            "z": 50,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R2-A1",
+            "x": 40,
+            "y": 0,
+            "z": 110,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R2-A2",
+            "x": 110,
+            "y": 0,
+            "z": 110,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R2-A3",
+            "x": 180,
+            "y": 0,
+            "z": 110,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R2-A4",
+            "x": 250,
+            "y": 0,
+            "z": 110,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R2-A5",
+            "x": 320,
+            "y": 0,
+            "z": 110,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R2-A6",
+            "x": 390,
+            "y": 0,
+            "z": 110,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R2-A7",
+            "x": 460,
+            "y": 0,
+            "z": 110,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R3-A1",
+            "x": 40,
+            "y": 0,
+            "z": 170,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R3-A2",
+            "x": 110,
+            "y": 0,
+            "z": 170,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R3-A3",
+            "x": 180,
+            "y": 0,
+            "z": 170,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R3-A4",
+            "x": 250,
+            "y": 0,
+            "z": 170,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R3-A5",
+            "x": 320,
+            "y": 0,
+            "z": 170,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R3-A6",
+            "x": 390,
+            "y": 0,
+            "z": 170,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R3-A7",
+            "x": 460,
+            "y": 0,
+            "z": 170,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R4-A1",
+            "x": 40,
+            "y": 0,
+            "z": 230,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R4-A2",
+            "x": 110,
+            "y": 0,
+            "z": 230,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R4-A3",
+            "x": 180,
+            "y": 0,
+            "z": 230,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R4-A4",
+            "x": 250,
+            "y": 0,
+            "z": 230,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R4-A5",
+            "x": 320,
+            "y": 0,
+            "z": 230,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R4-A6",
+            "x": 390,
+            "y": 0,
+            "z": 230,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "R4-A7",
+            "x": 460,
+            "y": 0,
+            "z": 230,
+            "length": 60,
+            "width": 4,
+            "height": 26,
+            "zone": "storage-zone"
+        }
+    ],
+    "offices": [],
+    "corridors": [],
+    "docks": [],
+    "bins": []
+}

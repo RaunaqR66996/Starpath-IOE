@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `inventory` ADD COLUMN `customAttributes` TEXT NULL,
+    ADD COLUMN `locked` BOOLEAN NOT NULL DEFAULT false,
+    ADD COLUMN `status` VARCHAR(191) NOT NULL DEFAULT 'AVAILABLE';

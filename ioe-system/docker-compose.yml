@@ -1,0 +1,43 @@
+
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: starpath-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=mysql://user:password@db:3306/starpath_ioe
+      - NEXTAUTH_SECRET=changeme
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - db
+    networks:
+      - starpath-network
+
+  db:
+    image: mysql:8.0
+    container_name: starpath-db
+    restart: always
+    ports:
+      - "3307:3306" # Expose on 3307 to avoid conflict with local MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: starpath_ioe
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - starpath-network
+
+networks:
+  starpath-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

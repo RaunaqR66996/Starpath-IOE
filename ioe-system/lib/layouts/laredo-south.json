@@ -1,0 +1,705 @@
+{
+    "site": {
+        "width": 500,
+        "depth": 700
+    },
+    "zones": [
+        {
+            "id": "staging-zone",
+            "label": "Staging Zone",
+            "x": 250,
+            "z": 620,
+            "width": 480,
+            "depth": 100,
+            "color": "#3b82f640"
+        },
+        {
+            "id": "storage-zone",
+            "label": "Storage Zone",
+            "x": 250,
+            "z": 300,
+            "width": 480,
+            "depth": 500,
+            "color": "#22c55e40"
+        }
+    ],
+    "walls": [
+        {
+            "id": "wall-north",
+            "x": 250,
+            "z": 0.5,
+            "width": 1,
+            "height": 45,
+            "length": 500,
+            "rotationY": 0,
+            "color": "#6b7280"
+        },
+        {
+            "id": "wall-south",
+            "x": 250,
+            "z": 699.5,
+            "width": 1,
+            "height": 45,
+            "length": 500,
+            "rotationY": 0,
+            "color": "#6b7280"
+        },
+        {
+            "id": "wall-west",
+            "x": 0.5,
+            "z": 350,
+            "width": 1,
+            "height": 45,
+            "length": 700,
+            "rotationY": 1.5708,
+            "color": "#6b7280"
+        },
+        {
+            "id": "wall-east",
+            "x": 499.5,
+            "z": 350,
+            "width": 1,
+            "height": 45,
+            "length": 700,
+            "rotationY": 1.5708,
+            "color": "#6b7280"
+        }
+    ],
+    "columns": [
+        {
+            "id": "c11",
+            "x": 100,
+            "z": 100,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c12",
+            "x": 250,
+            "z": 100,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c13",
+            "x": 400,
+            "z": 100,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c21",
+            "x": 100,
+            "z": 200,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c22",
+            "x": 250,
+            "z": 200,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c23",
+            "x": 400,
+            "z": 200,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c31",
+            "x": 100,
+            "z": 300,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c32",
+            "x": 250,
+            "z": 300,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c33",
+            "x": 400,
+            "z": 300,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c41",
+            "x": 100,
+            "z": 400,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c42",
+            "x": 250,
+            "z": 400,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c43",
+            "x": 400,
+            "z": 400,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c51",
+            "x": 100,
+            "z": 500,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c52",
+            "x": 250,
+            "z": 500,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c53",
+            "x": 400,
+            "z": 500,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c61",
+            "x": 100,
+            "z": 600,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c62",
+            "x": 250,
+            "z": 600,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        },
+        {
+            "id": "c63",
+            "x": 400,
+            "z": 600,
+            "radius": 2,
+            "height": 45,
+            "color": "#78716c"
+        }
+    ],
+    "dockDoors": [
+        {
+            "id": "d1",
+            "x": 50,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d2",
+            "x": 90,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d3",
+            "x": 130,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d4",
+            "x": 170,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d5",
+            "x": 210,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d6",
+            "x": 250,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d7",
+            "x": 290,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d8",
+            "x": 330,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d9",
+            "x": 370,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d10",
+            "x": 410,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        },
+        {
+            "id": "d11",
+            "x": 450,
+            "y": 0,
+            "z": 700,
+            "width": 1,
+            "height": 16,
+            "length": 14,
+            "zone": "outbound"
+        }
+    ],
+    "stagingLanes": [
+        {
+            "id": "sl1",
+            "x": 50,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "READY"
+        },
+        {
+            "id": "sl2",
+            "x": 90,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "FILLING"
+        },
+        {
+            "id": "sl3",
+            "x": 130,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl4",
+            "x": 170,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "DISPATCHED"
+        },
+        {
+            "id": "sl5",
+            "x": 210,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "READY"
+        },
+        {
+            "id": "sl6",
+            "x": 250,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl7",
+            "x": 290,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl8",
+            "x": 330,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl9",
+            "x": 370,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl10",
+            "x": 410,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        },
+        {
+            "id": "sl11",
+            "x": 450,
+            "y": 0,
+            "z": 650,
+            "length": 14,
+            "width": 30,
+            "height": 0.1,
+            "zone": "staging-zone",
+            "status": "EMPTY"
+        }
+    ],
+    "racks": [
+        {
+            "id": "RA1",
+            "x": 50,
+            "y": 0,
+            "z": 100,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RA2",
+            "x": 150,
+            "y": 0,
+            "z": 100,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RA3",
+            "x": 250,
+            "y": 0,
+            "z": 100,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RA4",
+            "x": 350,
+            "y": 0,
+            "z": 100,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RA5",
+            "x": 450,
+            "y": 0,
+            "z": 100,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RB1",
+            "x": 50,
+            "y": 0,
+            "z": 200,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RB2",
+            "x": 150,
+            "y": 0,
+            "z": 200,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RB3",
+            "x": 250,
+            "y": 0,
+            "z": 200,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RB4",
+            "x": 350,
+            "y": 0,
+            "z": 200,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RB5",
+            "x": 450,
+            "y": 0,
+            "z": 200,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RC1",
+            "x": 50,
+            "y": 0,
+            "z": 300,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RC2",
+            "x": 150,
+            "y": 0,
+            "z": 300,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RC3",
+            "x": 250,
+            "y": 0,
+            "z": 300,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RC4",
+            "x": 350,
+            "y": 0,
+            "z": 300,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RC5",
+            "x": 450,
+            "y": 0,
+            "z": 300,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RD1",
+            "x": 50,
+            "y": 0,
+            "z": 400,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RD2",
+            "x": 150,
+            "y": 0,
+            "z": 400,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RD3",
+            "x": 250,
+            "y": 0,
+            "z": 400,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RD4",
+            "x": 350,
+            "y": 0,
+            "z": 400,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RD5",
+            "x": 450,
+            "y": 0,
+            "z": 400,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RE1",
+            "x": 50,
+            "y": 0,
+            "z": 500,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RE2",
+            "x": 150,
+            "y": 0,
+            "z": 500,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RE3",
+            "x": 250,
+            "y": 0,
+            "z": 500,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RE4",
+            "x": 350,
+            "y": 0,
+            "z": 500,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        },
+        {
+            "id": "RE5",
+            "x": 450,
+            "y": 0,
+            "z": 500,
+            "length": 80,
+            "width": 4,
+            "height": 30,
+            "zone": "storage-zone"
+        }
+    ],
+    "offices": [],
+    "corridors": [],
+    "docks": [],
+    "bins": []
+}

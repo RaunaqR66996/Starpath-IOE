@@ -1,0 +1,27 @@
+-- AlterTable
+ALTER TABLE `customer` ADD COLUMN `email` VARCHAR(191) NULL,
+    ADD COLUMN `phone` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `item` ADD COLUMN `category` VARCHAR(191) NOT NULL DEFAULT 'General',
+    ADD COLUMN `description` TEXT NULL,
+    ADD COLUMN `minOrderQty` INTEGER NOT NULL DEFAULT 1,
+    ADD COLUMN `price` DOUBLE NOT NULL DEFAULT 0,
+    ADD COLUMN `reorderPoint` INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN `safetyStock` INTEGER NOT NULL DEFAULT 0,
+    ADD COLUMN `uom` VARCHAR(191) NOT NULL DEFAULT 'EA';
+
+-- CreateTable
+CREATE TABLE `ImportJob` (
+    `id` VARCHAR(191) NOT NULL,
+    `filename` VARCHAR(191) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'PENDING',
+    `successCount` INTEGER NOT NULL DEFAULT 0,
+    `errorCount` INTEGER NOT NULL DEFAULT 0,
+    `errors` TEXT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

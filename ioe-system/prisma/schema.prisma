@@ -1,0 +1,1014 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+  // previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Master Data ---
+
+model Item {
+  id             String   @id @default(uuid())
+  sku            String   @unique
+  name           String
+  type           String   // "MAKE" | "BUY"
+  cost           Float    @default(0)
+  price          Float    @default(0) // List Price
+  description    String?  @db.Text
+  category       String   @default("General")
+  uom            String   @default("EA")
+  leadTimeDays   Int      @default(0)
+  lifecycleStatus String   @default("ACTIVE") // DESIGN, ACTIVE, PHASE_OUT, OBSOLETE
+  skuConfidence  String   @default("APPROVED") // "APPROVED" | "PLACEHOLDER"
+  approvalStatus String   @default("APPROVED") // "PENDING" | "APPROVED" | "REJECTED"
+
+  // Planning Parameters (MRP Phase 2)
+  reorderPoint   Int      @default(0)
+  safetyStock    Int      @default(0)
+  minOrderQty    Int      @default(1)
+
+  // Relations
+  inventory      Inventory[]
+  orderLines     OrderLine[]
+  purchaseLines  PurchaseOrderLine[]
+  receiptLines   ReceiptLine[]
+  warehouseTasks WarehouseTask[]
+  
+  // BOM Relations
+  bomsAsParent   Bom[] @relation("ParentItem")
+  bomsAsChild    Bom[] @relation("ChildItem")
+  
+  // Manufacturing Relations
+  productionOrders ProductionOrder[]
+  routings         Routing[]
+  wipTransactions  WipTransaction[]
+  planningExceptions PlanningException[]
+
+  // WMS Relations
+  pickListItems    PickListItem[]
+  cycleCountLines  CycleCountLine[]
+  
+  // Planning Relations (New)
+  forecasts         ProductionForecast[]
+  materialShortages MaterialShortage[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Supplier {
+  id             String   @id @default(uuid())
+  name           String
+  contactName    String?
+  email          String?
+  
+  purchaseOrders PurchaseOrder[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Customer {
+  id             String   @id @default(uuid())
+  name           String
+  email          String?
+  phone          String?
+  tier           String   @default("Standard") // "Standard" | "Premium" | "Strategic"
+  defaultAddress String   @db.Text  // Address interface
+  orders         Order[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Bom {
+  id             String   @id @default(uuid())
+  
+  parentId       String
+  parentItem     Item     @relation("ParentItem", fields: [parentId], references: [id])
+  
+  childId        String
+  childItem      Item     @relation("ChildItem", fields: [childId], references: [id])
+  
+  quantity       Float    // Qty of child needed for 1 parent
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+
+// --- Procurement (Inbound) ---
+
+model PurchaseOrder {
+  id             String   @id @default(uuid())
+  poNumber       String   @unique // "PO-1001"
+  status         String   @default("DRAFT") // DRAFT, ISSUED, PARTIAL, CLOSED
+  
+  supplierId     String
+  supplier       Supplier @relation(fields: [supplierId], references: [id])
+  
+  lines          PurchaseOrderLine[]
+  receipts       Receipt[]
+  
+  expectedDate   DateTime?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PurchaseOrderLine {
+  id             String        @id @default(uuid())
+  poId           String
+  purchaseOrder  PurchaseOrder @relation(fields: [poId], references: [id])
+  
+  itemId         String
+  item           Item          @relation(fields: [itemId], references: [id])
+  
+  qtyOrdered     Int
+  qtyReceived    Int           @default(0)
+  unitCost       Float
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Receipt {
+  id             String        @id @default(uuid())
+  receiptNumber  String        @unique // "RCT-1001"
+  
+  poId           String?
+  purchaseOrder  PurchaseOrder? @relation(fields: [poId], references: [id])
+  
+  warehouseId    String
+  status         String        @default("RECEIVED") // RECEIVED, PUTAWAY_COMPLETED
+  
+  lines          ReceiptLine[]
+  
+  receivedAt     DateTime      @default(now())
+}
+
+model ReceiptLine {
+  id             String   @id @default(uuid())
+  receiptId      String
+  receipt        Receipt  @relation(fields: [receiptId], references: [id])
+  
+  itemId         String
+  item           Item     @relation(fields: [itemId], references: [id])
+  
+  qtyReceived    Int
+  locationId     String?  // Putaway location
+  
+  qualityInspection QualityInspection?
+}
+
+// --- Sales & Outbound ---
+
+model Order {
+  id                    String      @id @default(uuid())
+  erpReference          String      @unique // "PO-998877"
+  
+  customerId            String
+  customer              Customer    @relation(fields: [customerId], references: [id])
+  customerName          String      // Denormalized for UI speed
+
+  originId              String      // Warehouse ID
+  destination           String   @db.Text     // Address interface
+
+  status                String      // OrderStatus Enum
+  
+  // Finance
+  invoice               Invoice?
+  priority              String      // Priority Enum
+
+  requestedDeliveryDate DateTime
+  totalWeight           Float
+  totalValue            Float
+
+  lines                 OrderLine[]
+  tags                  String?  @db.Text  // SQLite doesn't support String[]
+  
+  // Relations
+  shipmentId            String?
+  shipment              Shipment?   @relation(fields: [shipmentId], references: [id])
+
+  tasks                 WarehouseTask[]
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  // Relations
+}
+
+model Invoice {
+  id                    String      @id @default(uuid())
+  invoiceNumber         String      @unique // "INV-1001"
+  status                String      @default("UNPAID") // UNPAID, PAID, VOID, OVERDUE
+  
+  orderId               String      @unique
+  order                 Order       @relation(fields: [orderId], references: [id])
+  
+  amount                Float
+  dueDate               DateTime
+  paidAt                DateTime?
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+}
+
+
+model OrderLine {
+  id           String   @id @default(uuid())
+  lineNumber   Int
+  
+  itemId       String
+  item         Item     @relation(fields: [itemId], references: [id])
+  
+  qtyOrdered   Int
+  qtyAllocated Int
+  qtyPicked    Int      @default(0)
+  qtyShipped   Int      @default(0)
+  unitPrice    Float
+  
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+
+model Shipment {
+  id              String   @id @default(uuid())
+  
+  carrierId       String?
+  carrier         Carrier? @relation(fields: [carrierId], references: [id])
+  
+  serviceLevel    String?   // "LTL", "FTL"
+  
+  origin          String   @db.Text  // Address
+  destination     String   @db.Text  // Address
+  
+  status          String   // ShipmentStatus Enum
+  totalWeight     Float
+  cost            Float
+  
+  orders          Order[]
+  
+  // New TMS Relations
+  loadId          String?
+  load            Load?    @relation(fields: [loadId], references: [id])
+  
+  trackingEvents  TrackingEvent[]
+  freightBill     FreightBill?
+  routeStops      RouteStop[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// --- Warehouse (WMS) ---
+
+model Inventory {
+  id          String   @id @default(uuid())
+  
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id])
+  
+  quantity    Int
+  locationId  String?  // Legacy string location
+  
+  // New WMS Location Logic
+  binId       String?
+  bin         Location? @relation(fields: [binId], references: [id])
+  
+  zoneId      String?
+  zone        Zone?    @relation(fields: [zoneId], references: [id])
+  warehouseId String
+
+  // Alive Inventory (Aha #2)
+  status      String   @default("AVAILABLE") // AVAILABLE, QC_HOLD, BLOCKED, DAMAGES
+  locked      Boolean  @default(false)
+  customAttributes String? @db.Text // Reason codes, etc.
+
+  // WMS Extensions
+  lotNumber      String?
+  expirationDate DateTime?
+  
+  updatedAt   DateTime @updatedAt
+}
+
+model WarehouseTask {
+  id           String   @id @default(uuid())
+  type         String   // 'PICK', 'CREDIT_CHECK', 'PACK', 'SHIP_RELEASE'
+  status       String   // 'PENDING', 'IN_PROGRESS', 'COMPLETED'
+  priority     String   @default("NORMAL")
+  
+  orderId      String?
+  order        Order?   @relation(fields: [orderId], references: [id])
+  
+  itemId       String?
+  item         Item?    @relation(fields: [itemId], references: [id])
+  
+  qty          Int?
+  locationId   String?
+  toLocationId String?
+  
+  assignedUser String?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ZoneMetric {
+  id             String   @id @default(uuid())
+  warehouseId    String
+  zoneId         String   // e.g., "A-1", "B-2" - corresponds to rack/aisle logical zones
+  occupancy      Float    // 0.0 - 1.0 (Space used)
+  density        Float    // 0.0 - 1.0 (Inventory density / congestion)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([warehouseId, zoneId])
+}
+
+
+
+// --- Spatial Intelligence (Aha #3) ---
+
+model Zone {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // "DOCK", "PRODUCTION", "STORAGE"
+  x           Float    @default(0)
+  y           Float    @default(0)
+  
+  workCenters WorkCenter[]
+  inventory   Inventory[]
+  
+  fromTransits TransitTime[] @relation("FromZone")
+  toTransits   TransitTime[] @relation("ToZone")
+
+  updatedAt   DateTime @updatedAt
+}
+
+model TransitTime {
+  id          String   @id @default(uuid())
+  fromZoneId  String
+  fromZone    Zone     @relation("FromZone", fields: [fromZoneId], references: [id])
+  
+  toZoneId    String
+  toZone      Zone     @relation("ToZone", fields: [toZoneId], references: [id])
+  
+  minutes     Int
+  
+  @@unique([fromZoneId, toZoneId])
+}
+
+// --- Manufacturing & Production ---
+
+// --- Manufacturing & Production ---
+
+model WorkCenter {
+  id              String   @id @default(uuid())
+  name            String
+  code            String   @unique // "WC-01"
+  type            String   // "ASSEMBLY", "MACHINING", "PACKING"
+  capacityHours   Float    @default(8.0)
+  efficiency      Float    @default(1.0)
+  
+  zoneId          String?
+  zone            Zone?    @relation(fields: [zoneId], references: [id])
+  
+  tasks           ProductionTask[]
+  capacityLogs    CapacityLog[]
+  
+  updatedAt       DateTime @updatedAt
+}
+
+model Routing {
+  id              String   @id @default(uuid())
+  itemId          String
+  item            Item     @relation(fields: [itemId], references: [id])
+  
+  steps           String   @db.Text  // Array of { sequence, workCenterId, setupTime, runTime }
+  version         Int      @default(1)
+  isActive        Boolean  @default(true)
+  
+  updatedAt       DateTime @updatedAt
+}
+
+model ProductionOrder {
+  id              String   @id @default(uuid())
+  orderNumber     String   @unique // "MO-1001"
+  status          String   @default("PLANNED") // PLANNED, RELEASED, IN_PROGRESS, COMPLETED
+  
+  itemId          String
+  item            Item     @relation(fields: [itemId], references: [id])
+  
+  quantity        Int
+  
+  startDate       DateTime
+  endDate         DateTime
+  dueDate         DateTime?
+  
+  tasks           ProductionTask[]
+  wipTransactions WipTransaction[]
+  
+  // Link to Plan
+  planId          String?
+  plan            PlanningRun? @relation(fields: [planId], references: [id])
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ProductionTask {
+  id                String          @id @default(uuid())
+  productionOrderId String
+  productionOrder   ProductionOrder @relation(fields: [productionOrderId], references: [id])
+  
+  workCenterId      String
+  workCenter        WorkCenter      @relation(fields: [workCenterId], references: [id])
+  
+  sequence          Int
+  name              String          // "Drill", "Assemble"
+  status            String          @default("PENDING")
+  
+  startDate         DateTime
+  endDate           DateTime
+  
+  updatedAt         DateTime        @updatedAt
+}
+
+model ProductionForecast {
+  id          String   @id @default(uuid())
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id])
+  
+  date        DateTime // Weekly/Daily bucket
+  quantity    Int
+  confidence  Float    @default(1.0) // 0.8 = 80% confidence
+  
+  source      String   // "SALES_HISTORY", "MANUAL", "AI_PREDICTION"
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([itemId, date])
+}
+
+model MaterialShortage {
+  id             String   @id @default(uuid())
+  planId         String   // Link to a specific MRP run ID
+  plan           PlanningRun @relation(fields: [planId], references: [id])
+  
+  itemId         String
+  item           Item     @relation(fields: [itemId], references: [id])
+  
+  requiredQty    Int
+  availableQty   Int
+  shortageQty    Int
+  
+  requiredDate   DateTime
+  
+  status         String   @default("OPEN") // OPEN, RESOLVED, PO_CREATED
+  actionProposed String?  // "EXPEDITE", "BUY", "TRANSFER"
+  
+  createdAt      DateTime @default(now())
+}
+
+// --- New Deterministic Planning Models ---
+
+model PlanningRun {
+  id          String   @id @default(uuid())
+  runDate     DateTime @default(now())
+  status      String   @default("COMPLETED") // RUNNING, COMPLETED, FAILED
+  
+  horizonStart DateTime
+  horizonEnd   DateTime
+  
+  mpsItems     MasterSchedule[]
+  shortages    MaterialShortage[]
+  exceptions   PlanningException[]
+  capacityLogs CapacityLog[]
+  plannedOrders ProductionOrder[]
+  
+  createdAt    DateTime @default(now())
+}
+
+model MasterSchedule {
+  id          String   @id @default(uuid())
+  planId      String
+  plan        PlanningRun @relation(fields: [planId], references: [id])
+  
+  itemId      String
+  
+  date        DateTime // Bucket Date
+  quantity    Int
+  status      String   @default("DRAFT") // DRAFT, FROZEN, RELEASED
+  
+  createdAt   DateTime @default(now())
+}
+
+model PlanningException {
+  id          String   @id @default(uuid())
+  planId      String
+  plan        PlanningRun @relation(fields: [planId], references: [id])
+  
+  type        String   // "CAPACITY_OVERLOAD", "LATE_ORDER", "MATERIAL_SHORTAGE"
+  severity    String   // "CRITICAL", "WARNING"
+  
+  entityId    String?  // ID of the WorkCenter
+  itemId      String?
+  item        Item?    @relation(fields: [itemId], references: [id])
+  
+  message     String
+  shortageQty Float?
+  recommendation String?
+  
+  status      String   @default("OPEN") // OPEN, RESOLVED, IGNORED
+  
+  createdAt   DateTime @default(now())
+}
+
+model CapacityLog {
+  id            String   @id @default(uuid())
+  planId        String
+  plan          PlanningRun @relation(fields: [planId], references: [id])
+  
+  workCenterId  String
+  workCenter    WorkCenter @relation(fields: [workCenterId], references: [id])
+  
+  date          DateTime // Bucket Date
+  loadHours     Float
+  capacityHours Float
+  utilization   Float // Percentage
+  
+  createdAt     DateTime @default(now())
+}
+
+// --- New Enterprise Modules (Phase 1) ---
+
+model Employee {
+  id          String   @id @default(uuid())
+  firstName   String
+  lastName    String
+  email       String?
+  role        String   // "Manager", "Associate"
+  department  String   // "HR", "Sales"
+  status      String   @default("ACTIVE")
+  
+  startDate   DateTime
+  salary      Float
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?  @db.Text
+  manager     String
+  status      String   @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED
+  
+  startDate   DateTime
+  endDate     DateTime?
+  budget      Float    @default(0)
+  
+  tasks       String?  @db.Text // Simple JSON array for now
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Risk {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  category    String   // "Financial", "Operational"
+  
+  likelihood  String   // "Low", "Medium", "High"
+  impact      String   // "Low", "Medium", "High"
+  
+  mitigation  String?  @db.Text
+  owner       String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceTicket {
+  id          String   @id @default(uuid())
+  title       String
+  description String?  @db.Text
+  status      String   @default("OPEN")
+  priority    String   // "Low", "Critical"
+  
+  customer    String
+  assignedTo  String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+// --- Transportation Management System (TMS) ---
+
+model Carrier {
+  id             String   @id @default(uuid())
+  name           String
+  scac           String   @unique // Standard Carrier Alpha Code
+  mode           String   // TRUCK, AIR, OCEAN, RAIL
+  rating         Float    @default(0.0) // 0-5 stars
+  
+  status         String   @default("ACTIVE")
+  
+  services       CarrierService[]
+  contracts      CarrierContract[]
+  shipments      Shipment[]
+  dockAppointments DockAppointment[]
+  routes         Route[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CarrierService {
+  id             String   @id @default(uuid())
+  carrierId      String
+  carrier        Carrier  @relation(fields: [carrierId], references: [id])
+  
+  name           String   // "Next Day Air", "Ground", "LTL Economy"
+  code           String
+  description    String?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CarrierContract {
+  id             String   @id @default(uuid())
+  carrierId      String
+  carrier        Carrier  @relation(fields: [carrierId], references: [id])
+  
+  contractNumber String
+  startDate      DateTime
+  endDate        DateTime
+  status         String   @default("ACTIVE")
+  
+  // Simplified rate storage
+  rates          String?  @db.Text // JSON: { "zone1": 10.50, "perMile": 2.10 }
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Load {
+  id             String   @id @default(uuid())
+  loadReference  String   @unique // "LD-2024-001"
+  status         String   @default("PLANNED") // PLANNED, TENDERED, DISPATCHED, IN_TRANSIT, DELIVERED
+  
+  totalWeight    Float    @default(0)
+  totalVolume    Float    @default(0)
+  totalCost      Float    @default(0)
+  
+  driverId       String?
+  vehicleId      String?
+  
+  shipments      Shipment[]
+  stops          Stop[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Stop {
+  id             String   @id @default(uuid())
+  loadId         String
+  load           Load     @relation(fields: [loadId], references: [id])
+  
+  sequence       Int      // 1, 2, 3...
+  type           String   // PICKUP, DROP
+  
+  locationId     String?  // Link to a Location/Warehouse/Customer
+  address        String?  @db.Text
+  
+  arrivalDate    DateTime?
+  departureDate  DateTime?
+  
+  status         String   @default("PENDING")
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TrackingEvent {
+  id             String   @id @default(uuid())
+  shipmentId     String
+  shipment       Shipment @relation(fields: [shipmentId], references: [id])
+  
+  status         String   // "PICKED_UP", "IN_TRANSIT", "DELAYED", "DELIVERED"
+  location       String?
+  timestamp      DateTime
+  source         String   // "GPS", "EDI", "MANUAL", "APP"
+  
+  details        String?  @db.Text
+  
+  createdAt      DateTime @default(now())
+}
+
+model Route {
+  id             String   @id @default(uuid())
+  name           String   // "Regional Milk Run A"
+  status         String   @default("DRAFT") // DRAFT, OPTIMIZED, CONFIRMED
+  
+  carrierId      String?
+  carrier        Carrier? @relation(fields: [carrierId], references: [id])
+  
+  totalDistance  Float    @default(0)
+  totalDuration  Float    @default(0) // Hours
+  totalCost      Float    @default(0)
+  
+  savings        Float    @default(0) // $ Saved vs LTL
+  
+  stops          RouteStop[]
+  
+  // Link to Scenario
+  scenarioId     String?
+  scenario       OptimizationScenario? @relation(fields: [scenarioId], references: [id])
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RouteStop {
+  id             String   @id @default(uuid())
+  routeId        String
+  route          Route    @relation(fields: [routeId], references: [id])
+  
+  shipmentId     String?
+  shipment       Shipment? @relation(fields: [shipmentId], references: [id])
+  
+  sequence       Int
+  type           String   // PICKUP, DELIVERY
+  location       String?  @db.Text
+  
+  createdAt      DateTime @default(now())
+}
+
+model OptimizationScenario {
+  id             String   @id @default(uuid())
+  name           String   // "Q1 LTL Consolidation"
+  status         String   @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  
+  parameters     String?  @db.Text // JSON: { maxStops: 5, maxDistance: 500 }
+  
+  routes         Route[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model FreightBill {
+  id             String   @id @default(uuid())
+  invoiceNumber  String   @unique
+  
+  carrierId      String
+  // Relation to carrier intentionally loose here (just ID) for flexibility or could be strict
+  
+  shipmentId     String   @unique
+  shipment       Shipment @relation(fields: [shipmentId], references: [id])
+  
+  amount         Float
+  currency       String   @default("USD")
+  
+  status         String   @default("RECEIVED") // RECEIVED, AUDITED, DISPUTED, APPROVED, PAID
+  
+  audits         FreightAudit[]
+  
+  dueDate        DateTime
+  paidDate       DateTime?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model FreightAudit {
+  id             String      @id @default(uuid())
+  freightBillId  String
+  freightBill    FreightBill @relation(fields: [freightBillId], references: [id])
+  
+  discrepancy    Float       // Amount difference
+  notes          String?
+  status         String      // "OPEN", "RESOLVED"
+  
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+// --- Warehouse Management System (WMS) Extensions ---
+
+model Dock {
+  id             String   @id @default(uuid())
+  name           String   // "Dock 1", "Dock 2"
+  warehouseId    String
+  
+  status         String   @default("AVAILABLE") // AVAILABLE, OCCUPIED, MAINTENANCE
+  type           String   @default("GENERAL")   // INBOUND, OUTBOUND, GENERAL
+  
+  appointments   DockAppointment[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model DockAppointment {
+  id             String   @id @default(uuid())
+  dockId         String
+  dock           Dock     @relation(fields: [dockId], references: [id])
+  
+  carrierId      String?
+  carrier        Carrier? @relation(fields: [carrierId], references: [id])
+  
+  startTime      DateTime
+  endTime        DateTime
+  
+  type           String   // "PICKUP", "DELIVERY"
+  status         String   @default("SCHEDULED") // SCHEDULED, ARRIVED, RELEASED, NO_SHOW
+  
+  // Link to documents
+  poId           String?  // For Inbound
+  loadId         String?  // For Outbound
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model QualityInspection {
+  id             String   @id @default(uuid())
+  
+  receiptLineId  String   @unique
+  receiptLine    ReceiptLine @relation(fields: [receiptLineId], references: [id])
+  
+  inspector      String
+  result         String   // "PASS", "FAIL", "CONDITIONAL"
+  
+  sampleSize     Int      @default(1)
+  defectCount    Int      @default(0)
+  
+  notes          String?  @db.Text
+  images         String?  @db.Text // JSON array of URLs
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PickWave {
+  id             String   @id @default(uuid())
+  waveNumber     String   @unique // "WAVE-2024-001"
+  status         String   @default("PLANNED") // PLANNED, RELEASED, IN_PROGRESS, COMPLETED
+  
+  type           String   // "BATCH", "ZONE", "SINGLE"
+  
+  warehouseId    String
+  
+  pickLists      PickList[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PickList {
+  id             String   @id @default(uuid())
+  waveId         String
+  pickWave       PickWave @relation(fields: [waveId], references: [id])
+  
+  status         String   @default("PENDING")
+  
+  items          PickListItem[]
+  
+  assignedUsers  String?  @db.Text // JSON array of user IDs
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PickListItem {
+  id             String   @id @default(uuid())
+  pickListId     String
+  pickList       PickList @relation(fields: [pickListId], references: [id])
+  
+  itemId         String
+  item           Item     @relation(fields: [itemId], references: [id])
+  
+  locationId     String   // Target bin
+  quantity       Int
+  pickedQty      Int      @default(0)
+  
+  orderId        String
+  orderLineId    String
+  
+  status         String   @default("PENDING") // PENDING, PICKED, SHORT
+  
+  updatedAt      DateTime @updatedAt
+}
+
+model WaveRule {
+  id             String   @id @default(uuid())
+  name           String   // "UPS Ground 4PM"
+  criteria       String   @db.Text // JSON: { "carrier": "UPS", "service": "Ground" }
+  priority       Int      @default(0)
+  
+  updatedAt      DateTime @updatedAt
+}
+
+model Location {
+  id             String   @id @default(uuid())
+  name           String   // "A-01-01-01"
+  warehouseId    String
+  // warehouse   Warehouse @relation... (if needed)
+  
+  zone           String   // "A", "BULK", "COLD"
+  type           String   // "PICK", "RESERVE", "STAGING", "DOCK"
+  
+  capacity       Float    @default(100)
+  currentLoad    Float    @default(0)
+  
+  status         String   @default("ACTIVE") // ACTIVE, BLOCKED, COUNTING
+  
+  // Link to Inventory
+  inventory      Inventory[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CycleCount {
+  id             String   @id @default(uuid())
+  reference      String   @unique
+  status         String   @default("PLANNED") // PLANNED, IN_PROGRESS, REVIEW, CLOSED
+  
+  warehouseId    String
+  zoneId         String?  // Specific zone or null for full warehouse
+  
+  assignedTo     String?
+  
+  lines          CycleCountLine[]
+  
+  scheduledDate  DateTime
+  completedDate  DateTime?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model CycleCountLine {
+  id             String   @id @default(uuid())
+  cycleCountId   String
+  cycleCount     CycleCount @relation(fields: [cycleCountId], references: [id])
+  
+  itemId         String
+  item           Item     @relation(fields: [itemId], references: [id])
+  locationId     String
+  
+  systemQty      Int      // Implementation snapshot
+  countedQty     Int?
+  
+  variance       Int?     // Calculated
+  reasonCode     String?
+  
+  status         String   @default("PENDING") // PENDING, COUNTED, RECOUNT, APPROVED
+  
+  updatedAt      DateTime @updatedAt
+}
+
+model ImportJob {
+  id             String   @id @default(uuid())
+  filename       String
+  type           String   // ITEM, CUSTOMER, SUPPLIER, INVENTORY
+  status         String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  
+  successCount   Int      @default(0)
+  errorCount     Int      @default(0)
+  
+  errors         String?  @db.Text // JSON Log
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model WipTransaction {
+  id               String   @id @default(uuid())
+  productionOrderId String
+  itemId           String
+  quantity         Float
+  transactionType  String   // "CONSUME" (In) | "PRODUCE" (Out)
+  workerId         String?
+  timestamp        DateTime @default(now())
+
+  item             Item     @relation(fields: [itemId], references: [id])
+  productionOrder  ProductionOrder @relation(fields: [productionOrderId], references: [id])
+
+  @@index([productionOrderId])
+  @@index([itemId])
+}
