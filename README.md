@@ -22,19 +22,9 @@ Moving beyond static spreadsheets, StarPath provides a pixel-perfect, 3-acre 3D 
 - **Hardware Agnostic**: Native integration with AMR (Autonomous Mobile Robots) and LiDAR telemetry.
 - **Asset Health**: Predictive maintenance tracking with MTBF monitoring.
 
-#### 2. 🛰️ Network Command (PMESII Framework)
-A global control tower inspired by military-grade operational frameworks.
-- **Multi-Node Visibility**: Track hundreds of active nodes and "In-Transit" shipments in real-time.
-- **Operational Graph**: Holistic view of Political, Military, Economic, Social, Infrastructure, and Information dependencies.
-- **Risk Mitigation**: Autonomous inter-site transfer suggestions to prevent stockouts.
 
-#### 3. 🧠 Agentic AI (FAR Architecture)
-The **FAR Engine**—our "Fission-Augmented Reasoning" architecture—provides System 2 thinking for your supply chain.
-- **Chain Reaction Analysis**: Simulates downstream effects of every decision before execution.
-- **Multi-Agent Consensus**: Collaborative AI agents (utilizing Ensemble Debate) filtered by a "Consensus Arbiter" for hallucination-free reasoning.
-- **Deterministic Planning**: Finite-capacity APS engine that respects real-world constraints like machine health and labor shifts.
 
-#### 4. 💸 Enterprise TMS & Financial Controller
+#### 2. 💸 Enterprise TMS & Financial Controller
 A high-fidelity logistics and resource management suite.
 - **Dispatcher Workbench**: Integrated Load Planner with dock scheduling and driver availability.
 - **Continuous Audit**: Automated freight bill audit comparing every invoice against actual shipment rates.
