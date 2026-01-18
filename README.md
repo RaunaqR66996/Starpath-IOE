@@ -22,21 +22,23 @@ High-fidelity logistics and resource management suite.
 - **Continuous Audit**: Automated freight bill rating and cost estimation for every shipment.
 - **ESG Framework**: Architecture for tracking CO2 impact and renewable energy usage metrics.
 
-## Core Functionality
+## Built for High-Velocity Operations
 
-*   **Real-Time Inventory Tracking**: Monitor stock levels, status (Available/Blocked), and bin locations across multiple facilities.
-*   **Logistics & Dispatch**: Plan shipments, assign drivers, view route optimizations, and manage dock schedules.
-*   **Supply Chain Visualization**: Visualize global network nodes and in-transit shipments on an interactive map.
-*   **Hardware Telemetry Stream**: Ingest and display live sensor data from warehouse robotics and forklifts.
-*   **Financial Estimation**: Calculate estimated shipment costs and audit freight bills against rates.
+*   **Eliminate Information Latency**: Replace 24-hour reporting cycles with sub-second inventory visibility. Track stock levels, quality status, and precise bin locations in real-time.
+*   **Algorithmic Logistics**: Move beyond manual dispatching. Use intelligent load planning to optimize routes, assign drivers, and synchronize dock schedules to maximize asset utilization.
+*   **Industry 4.0 Ready**: A true "System of Reality" that ingests live telemetry from AMRs, LiDAR sensors, and forklifts, visualizing operations as they happen, not as they were planned.
+*   **Automated Revenue Protection**: Stop revenue leakage with continuous freight bill auditing. Instantly compare invoiced amounts against contracted rates to catch discrepancies.
+*   **Global Command Center**: A unified operational graph that visualizes your entire supply chain network—from supplier nodes to final mile dispatch—on an interactive, data-dense map.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 16, React 19, Tailwind CSS 4
-- **Visualization**: Three.js, React Three Fiber, Mapbox GL
-- **Backend**: Prisma ORM, Supabase/PostgreSQL
-- **State Management**: Zustand
-- **Animations**: Framer Motion
+Designed for performance, type-safety, and developer experience.
+
+- **Frontend**: **Next.js 16** (App Router) & **React 19** for a high-performance, server-first architecture.
+- **Styling**: **Tailwind CSS 4** for rapid, utility-first design.
+- **Visualization**: **Three.js** & **React Three Fiber** for hardware-accelerated 3D rendering; **Mapbox GL** for geospatial data.
+- **Backend & Data**: **Prisma ORM** with **PostgreSQL** for type-safe database access and reliability.
+- **State**: **Zustand** for transient, high-frequency state updates.
 
 
 
