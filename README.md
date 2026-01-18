@@ -30,43 +30,7 @@ High-fidelity logistics and resource management suite.
 - **State Management**: Zustand
 - **Animations**: Framer Motion
 
-## Getting Started
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL
-- Mapbox API Key
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/RaunaqR66996/Starpath-IOE.git
-   cd Starpath-IOE/ioe-system
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Configure Environment**
-   Create a `.env` file in `ioe-system/`:
-   ```env
-   DATABASE_URL="your-postgresql-url"
-   NEXT_PUBLIC_MAPBOX_TOKEN="your-mapbox-token"
-   ```
-
-4. **Initialize Database**
-   ```bash
-   npx prisma migrate dev
-   npm run prisma:seed
-   ```
-
-5. **Run Development Server**
-   ```bash
-   npm run dev
-   ```
 
 ## License
 
