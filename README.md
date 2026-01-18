@@ -109,4 +109,4 @@ Built with a "Google-inspired" engineering culture, the StarPath stack is design
 **Founder**: [Raunaq Fardeen](https://github.com/RaunaqR66996)  
 Built with the goal of re-industrializing the American supply chain stack.
 
-*Disclaimer: This project is part of a strategic initiative for American Dynamism and global logistics resilience.*
+
