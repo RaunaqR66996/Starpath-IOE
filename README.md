@@ -22,6 +22,14 @@ High-fidelity logistics and resource management suite.
 - **Continuous Audit**: Automated freight bill rating and cost estimation for every shipment.
 - **ESG Framework**: Architecture for tracking CO2 impact and renewable energy usage metrics.
 
+## Core Functionality
+
+*   **Real-Time Inventory Tracking**: Monitor stock levels, status (Available/Blocked), and bin locations across multiple facilities.
+*   **Logistics & Dispatch**: Plan shipments, assign drivers, view route optimizations, and manage dock schedules.
+*   **Supply Chain Visualization**: Visualize global network nodes and in-transit shipments on an interactive map.
+*   **Hardware Telemetry Stream**: Ingest and display live sensor data from warehouse robotics and forklifts.
+*   **Financial Estimation**: Calculate estimated shipment costs and audit freight bills against rates.
+
 ## Tech Stack
 
 - **Frontend**: Next.js 16, React 19, Tailwind CSS 4
