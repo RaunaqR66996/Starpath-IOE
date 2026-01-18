@@ -1,0 +1,19 @@
+{
+    "name": "blue-ship-sync-monorepo",
+    "version": "0.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*",
+        "ioe-system"
+    ],
+    "scripts": {
+        "dev": "npm run dev --workspace=ioe-system",
+        "dev:planner": "npm run dev --workspace=apps/web",
+        "build": "npm run build --workspaces",
+        "test": "npm run test --workspaces"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3"
+    }
+}

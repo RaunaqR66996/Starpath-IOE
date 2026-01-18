@@ -1,10 +1,6 @@
 // @ts-nocheck
 import { db } from "@/lib/db";
 import { Order, OrderStatus, Priority, Customer, Address, Shipment, ShipmentStatus, InventoryItem, WarehouseTask, TaskType, TaskStatus } from "@/lib/types";
-import { MOCK_ORDERS, MOCK_CUSTOMERS, MOCK_SHIPMENTS, MOCK_INVENTORY, MOCK_TASKS } from "@/lib/data-mocks";
-
-// Helper to check if we should use mocks
-const USE_MOCKS = !process.env.DATABASE_URL;
 
 // Re-map Prisma result to our internal Order interface
 function mapPrismaOrder(pOrder: any): Order {
@@ -47,10 +43,6 @@ function mapPrismaOrder(pOrder: any): Order {
 }
 
 export async function getOrders(): Promise<Order[]> {
-    if (USE_MOCKS) {
-        console.log("Using Mock Orders");
-        return MOCK_ORDERS;
-    }
     try {
         if (!db) throw new Error("DB Client not initialized");
         const prismaOrders = await db.order.findMany({
@@ -65,15 +57,12 @@ export async function getOrders(): Promise<Order[]> {
 
         return prismaOrders.map(mapPrismaOrder);
     } catch (error) {
-        console.warn("Failed to fetch orders from DB, using mock data:", error);
-        return MOCK_ORDERS;
+        console.error("Failed to fetch orders from DB:", error);
+        return [];
     }
 }
 
 export async function getOrder(id: string): Promise<Order | null> {
-    if (USE_MOCKS) {
-        return MOCK_ORDERS.find(o => o.id === id) || null;
-    }
     try {
         if (!db) throw new Error("DB Client not initialized");
         const order = await db.order.findUnique({
@@ -90,8 +79,8 @@ export async function getOrder(id: string): Promise<Order | null> {
         if (!order) return null;
         return mapPrismaOrder(order);
     } catch (error) {
-        console.warn(`Failed to fetch order ${id}:`, error);
-        return MOCK_ORDERS.find(o => o.id === id) || null;
+        console.error(`Failed to fetch order ${id}:`, error);
+        return null;
     }
 }
 
@@ -105,7 +94,6 @@ function mapPrismaCustomer(pCust: any): Customer {
 }
 
 export async function getCustomers(): Promise<Customer[]> {
-    if (USE_MOCKS) return MOCK_CUSTOMERS;
     try {
         if (!db) throw new Error("DB Client not initialized");
         const customers = await db.customer.findMany({
@@ -113,8 +101,8 @@ export async function getCustomers(): Promise<Customer[]> {
         });
         return customers.map(mapPrismaCustomer);
     } catch (error) {
-        console.warn("Failed to fetch customers:", error);
-        return MOCK_CUSTOMERS;
+        console.error("Failed to fetch customers:", error);
+        return [];
     }
 }
 
@@ -137,7 +125,6 @@ function mapPrismaShipment(pShip: any): Shipment {
 }
 
 export async function getShipments(): Promise<Shipment[]> {
-    if (USE_MOCKS) return MOCK_SHIPMENTS;
     try {
         if (!db) throw new Error("DB Client not initialized");
         const shipments = await db.shipment.findMany({
@@ -145,13 +132,12 @@ export async function getShipments(): Promise<Shipment[]> {
         });
         return shipments.map(mapPrismaShipment);
     } catch (error) {
-        console.warn("Failed to fetch shipments:", error);
-        return MOCK_SHIPMENTS;
+        console.error("Failed to fetch shipments:", error);
+        return [];
     }
 }
 
 export async function getShipment(id: string): Promise<Shipment | null> {
-    if (USE_MOCKS) return MOCK_SHIPMENTS.find(s => s.id === id) || null;
     try {
         if (!db) throw new Error("DB Client not initialized");
         const shipment = await db.shipment.findUnique({
@@ -161,7 +147,7 @@ export async function getShipment(id: string): Promise<Shipment | null> {
         return mapPrismaShipment(shipment);
     } catch (error) {
         console.error(`Failed to fetch shipment ${id}:`, error);
-        return MOCK_SHIPMENTS.find(s => s.id === id) || null;
+        return null;
     }
 }
 
@@ -176,7 +162,6 @@ function mapPrismaInventory(pInv: any): InventoryItem {
 }
 
 export async function getInventory(warehouseId?: string): Promise<InventoryItem[]> {
-    if (USE_MOCKS) return MOCK_INVENTORY;
     try {
         if (!db) throw new Error("DB Client not initialized");
         const where = warehouseId ? { warehouseId } : {};
@@ -185,8 +170,8 @@ export async function getInventory(warehouseId?: string): Promise<InventoryItem[
         });
         return inventory.map(mapPrismaInventory);
     } catch (error) {
-        console.warn("Failed to fetch inventory:", error);
-        return MOCK_INVENTORY;
+        console.error("Failed to fetch inventory:", error);
+        return [];
     }
 }
 
@@ -210,7 +195,6 @@ function mapPrismaTask(pTask: any): WarehouseTask {
 }
 
 export async function getTasks(status?: TaskStatus): Promise<WarehouseTask[]> {
-    if (USE_MOCKS) return MOCK_TASKS;
     try {
         if (!db) throw new Error("DB Client not initialized");
         const where = status ? { status } : {};
@@ -220,29 +204,12 @@ export async function getTasks(status?: TaskStatus): Promise<WarehouseTask[]> {
         });
         return tasks.map(mapPrismaTask);
     } catch (error) {
-        console.warn("Failed to fetch tasks:", error);
-        return MOCK_TASKS;
+        console.error("Failed to fetch tasks:", error);
+        return [];
     }
 }
 
 export async function createTask(taskData: Partial<WarehouseTask>) {
-    if (USE_MOCKS) {
-        // Mock creation
-        return {
-            id: `TSK-MOCK-${Date.now()}`,
-            type: taskData.type || "PICK",
-            status: "PENDING",
-            priority: taskData.priority || "NORMAL",
-            orderId: taskData.orderId,
-            itemId: taskData.itemId,
-            qty: taskData.qty,
-            locationId: taskData.locationId,
-            toLocationId: taskData.toLocationId,
-            assignedUser: taskData.assignedUser,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        } as WarehouseTask;
-    }
     try {
         if (!db) throw new Error("DB Client not initialized");
         const task = await db.warehouseTask.create({

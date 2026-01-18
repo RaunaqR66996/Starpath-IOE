@@ -11,6 +11,44 @@ datasource db {
 
 // --- Master Data ---
 
+// --- Multi-Tenancy Core ---
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  domain      String?  @unique // e.g., "tesla.com"
+  plan        String   @default("ENTERPRISE") // STARTUP, GROWTH, ENTERPRISE
+  
+  // Relations to EVERYTHING
+  users       OrganizationUser[]
+  items       Item[]
+  customers   Customer[]
+  suppliers   Supplier[]
+  orders      Order[]
+  shipments   Shipment[]
+  inventory   Inventory[]
+  tasks       WarehouseTask[]
+  workCenters WorkCenter[]
+  projects    Project[]
+  purchaseOrders PurchaseOrder[]
+  zones       Zone[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OrganizationUser {
+  id             String       @id @default(uuid())
+  email          String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  role           String       @default("MEMBER") // ADMIN, PLANNER, VIEWER
+  
+  @@unique([email, organizationId])
+}
+
+// --- Master Data ---
+
 model Item {
   id             String   @id @default(uuid())
   sku            String   @unique
@@ -56,6 +94,9 @@ model Item {
   forecasts         ProductionForecast[]
   materialShortages MaterialShortage[]
 
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -67,6 +108,9 @@ model Supplier {
   email          String?
   
   purchaseOrders PurchaseOrder[]
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -80,6 +124,10 @@ model Customer {
   tier           String   @default("Standard") // "Standard" | "Premium" | "Strategic"
   defaultAddress String   @db.Text  // Address interface
   orders         Order[]
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
@@ -114,6 +162,9 @@ model PurchaseOrder {
   receipts       Receipt[]
   
   expectedDate   DateTime?
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
   
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -196,6 +247,9 @@ model Order {
 
   tasks                 WarehouseTask[]
 
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
 
@@ -261,6 +315,9 @@ model Shipment {
   trackingEvents  TrackingEvent[]
   freightBill     FreightBill?
   routeStops      RouteStop[]
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -294,6 +351,9 @@ model Inventory {
   lotNumber      String?
   expirationDate DateTime?
   
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
   updatedAt   DateTime @updatedAt
 }
 
@@ -314,6 +374,9 @@ model WarehouseTask {
   toLocationId String?
   
   assignedUser String?
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -346,6 +409,9 @@ model Zone {
   
   fromTransits TransitTime[] @relation("FromZone")
   toTransits   TransitTime[] @relation("ToZone")
+  
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   updatedAt   DateTime @updatedAt
 }
@@ -380,6 +446,9 @@ model WorkCenter {
   
   tasks           ProductionTask[]
   capacityLogs    CapacityLog[]
+  
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
   
   updatedAt       DateTime @updatedAt
 }
@@ -577,6 +646,9 @@ model Project {
   
   tasks       String?  @db.Text // Simple JSON array for now
   
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

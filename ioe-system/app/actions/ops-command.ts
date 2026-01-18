@@ -1,7 +1,6 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { MOCK_ORDERS, MOCK_SHIPMENTS, MOCK_TASKS, MOCK_INVENTORY } from "@/lib/data-mocks";
 import { ShipmentMapData } from "@/components/ioe/ShipmentsMap";
 
 export interface SystemHealth {
@@ -70,9 +69,8 @@ function getCoordsForCity(city: string): [number, number] {
 export async function getSystemHealth(): Promise<SystemHealth> {
     try {
         // Parallel data fetch for performance
-        // If DB is not available, we fall back to mocks at the array level for safety
-
-        let orders, shipments, tasks, inventory;
+        // Parallel data fetch for performance
+        let orders: any[] = [], shipments: any[] = [], tasks: any[] = [], inventory: any[] = [];
 
         if (db) {
             [orders, shipments, tasks, inventory] = await Promise.all([
@@ -81,12 +79,6 @@ export async function getSystemHealth(): Promise<SystemHealth> {
                 db.warehouseTask.findMany({ where: { status: 'PENDING' } }),
                 db.inventory.findMany({ include: { item: true } })
             ]);
-        } else {
-            // Fallback to Mocks if DB connection failed/missing
-            orders = MOCK_ORDERS;
-            shipments = MOCK_SHIPMENTS;
-            tasks = MOCK_TASKS;
-            inventory = MOCK_INVENTORY;
         }
 
         // Calculate Metrics

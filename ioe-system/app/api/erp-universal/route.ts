@@ -230,6 +230,13 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, record: result });
     } catch (error: any) {
         console.error('Prisma Write Error:', error);
+
+        // Handle specific Prisma errors
+        if (error.code === 'P2002') {
+            const target = error.meta?.target ? `(${error.meta.target})` : '';
+            return NextResponse.json({ error: `Duplicate record exists ${target}. Please use a unique ID.` }, { status: 400 });
+        }
+
         return NextResponse.json({ error: 'Database error: ' + error.message }, { status: 500 });
     }
 }

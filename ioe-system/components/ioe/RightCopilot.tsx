@@ -316,22 +316,8 @@ export function RightCopilot({ activeSite, activeTab, selectedActivity, layoutSu
         scrollToBottom();
     }, [messages, isLoading]);
 
-    React.useEffect(() => {
-        // SYSTEM INJECTION: Notify user of new capability
-        const hasSeen = sessionStorage.getItem('seen_dock_stock_intro');
-        if (!hasSeen) {
-            setTimeout(() => {
-                setMessages(prev => [
-                    ...prev,
-                    {
-                        role: 'assistant',
-                        content: "✅ **SYSTEM UPDATE**: Dock-to-Stock Protocol Activated.\n\nI am ready to receive POs into any warehouse. Try: *'Receive PO-TEST-101 into Texas'*."
-                    }
-                ]);
-                sessionStorage.setItem('seen_dock_stock_intro', 'true');
-            }, 1000);
-        }
-    }, []);
+    // Removed SYSTEM INJECTION "Dock-to-Stock Protocol Activated" block.
+
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -349,7 +335,13 @@ export function RightCopilot({ activeSite, activeTab, selectedActivity, layoutSu
                     console.error("Failed to read file:", file.name, err);
                 }
             }
+            // Add to state so they are sent with the next message
             setAttachments(prev => [...prev, ...newAttachments]);
+
+            // Auto-populate input to prompt the user or just hint
+            if (!inputValue) {
+                setInputValue(`Analyze this MRP file: ${e.target.files[0].name}`);
+            }
         }
         // Reset input
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -420,32 +412,54 @@ export function RightCopilot({ activeSite, activeTab, selectedActivity, layoutSu
     React.useEffect(() => {
         if (!messages.length) return;
         const lastMsg = messages[messages.length - 1];
-        if (lastMsg.role === 'assistant' && lastMsg.content.includes('[[ACTION:OPEN_TAB:')) {
-            const match = lastMsg.content.match(/\[\[ACTION:OPEN_TAB:(.*?)\]\]/);
-            if (match && match[1]) {
-                const actionString = match[1]; // e.g., "LOAD_GRAPH:WC-01" or just "Scheduling"
-                console.log("AI Navigation Trigger:", actionString);
+        if (lastMsg.role === 'assistant') {
 
-                const parts = actionString.split(':');
-                const type = parts[0];
-                const id = parts.length > 1 ? parts[1] : 'general';
-
-                // List of Top-Level Views that should switch the main EditorTabs
-                const MAIN_VIEWS = ["Orders", "Inventory", "Shipments", "Procurement", "Finance", "Planning", "Scheduling", "Sustainability"];
-
-                if (MAIN_VIEWS.includes(type)) {
-                    // Call the parent handler to switch top-level tabs
-                    if (onOpenTab) {
-                        onOpenTab(type);
+            // 1. DATA PARSING (Look for embedded JSON data)
+            let parsedData = null;
+            if (lastMsg.content.includes('[[DATA:PRODUCTION_PLAN:')) {
+                try {
+                    const jsonMatch = lastMsg.content.match(/\[\[DATA:PRODUCTION_PLAN:(.*?)\]\]/);
+                    if (jsonMatch && jsonMatch[1]) {
+                        parsedData = JSON.parse(jsonMatch[1]);
+                        console.log("Parsed Production Plan Data:", parsedData);
                     }
-                } else {
-                    // Otherwise, open it as a sub-tab in the Planning Workspace
-                    openTab({
-                        id: `${type}-${id}`,
-                        type: type as any,
-                        title: `${type} ${id}`,
-                        data: { id }
-                    });
+                } catch (e) {
+                    console.error("Failed to parse production plan data", e);
+                }
+            }
+
+            // 2. NAVIGATION ACTIONS
+            if (lastMsg.content.includes('[[ACTION:OPEN_TAB:')) {
+                const match = lastMsg.content.match(/\[\[ACTION:OPEN_TAB:(.*?)\]\]/);
+                if (match && match[1]) {
+                    const actionString = match[1]; // e.g., "production-plan-result" or "LOAD_GRAPH:WC-01"
+                    console.log("AI Navigation Trigger:", actionString);
+
+                    const parts = actionString.split(':');
+                    const type = parts[0];
+                    const id = parts.length > 1 ? parts[1] : 'general';
+
+                    // List of Top-Level Views that should switch the main EditorTabs
+                    const MAIN_VIEWS = [
+                        "Orders", "Inventory", "Shipments", "Procurement", "Finance",
+                        "Planning", "Scheduling", "Sustainability", "ItemMaster",
+                        "Carriers", "Locations", "Users", "Roles", "AuditLog", "Reports"
+                    ];
+
+                    if (MAIN_VIEWS.includes(type)) {
+                        // Call the parent handler to switch top-level tabs
+                        if (onOpenTab) {
+                            onOpenTab(type);
+                        }
+                    } else {
+                        // Otherwise, open it as a sub-tab in the Planning Workspace
+                        openTab({
+                            id: type === 'production-plan-result' ? `production-plan-result-${Date.now()}` : `${type}-${id}`,
+                            type: type as any,
+                            title: type === 'production-plan-result' ? "AI Production Plan" : `${type} ${id}`,
+                            data: parsedData ? parsedData : { id } // PASS THE PARSED DATA HERE
+                        });
+                    }
                 }
             }
         }

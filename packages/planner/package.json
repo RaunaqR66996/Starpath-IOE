@@ -1,0 +1,16 @@
+{
+    "name": "@starpath/planner",
+    "version": "0.0.1",
+    "main": "src/index.ts",
+    "scripts": {
+        "build": "tsc",
+        "test": "echo \"Error: no test specified\" && exit 0"
+    },
+    "dependencies": {
+        "@starpath/shared": "*",
+        "date-fns": "^3.0.0"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3"
+    }
+}

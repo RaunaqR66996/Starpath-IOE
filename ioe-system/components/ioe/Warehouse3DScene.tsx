@@ -483,15 +483,20 @@ export function Warehouse3DScene(props: Warehouse3DSceneProps) {
                 gl={{
                     antialias: true,
                     alpha: false,
-                    preserveDrawingBuffer: true
+                    preserveDrawingBuffer: true,
+                    toneMapping: THREE.ACESFilmicToneMapping,
+                    toneMappingExposure: 1.2
                 }}
             >
-                <color attach="background" args={["#000000"]} />
+                <color attach="background" args={["#020617"]} /> {/* Darker Blue-Black Background */}
+                <fog attach="fog" args={["#020617", viewDist * 0.5, viewDist * 2.5]} />
                 <WarehouseScene {...props} />
                 <OrbitControls
                     enablePan={true}
                     enableZoom={true}
                     enableRotate={true}
+                    autoRotate={false}
+                    autoRotateSpeed={0.5}
                     minDistance={5}
                     maxDistance={viewDist * 4}
                     maxPolarAngle={Math.PI / 2.1}

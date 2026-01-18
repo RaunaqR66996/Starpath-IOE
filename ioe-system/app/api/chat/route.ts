@@ -98,6 +98,13 @@ ACTION TRIGGERS:
   - 'FreightAudit'
   - 'Yard'
   - 'Receiving'
+  - 'ItemMaster'
+  - 'Carriers'
+  - 'Locations'
+  - 'Users'
+  - 'Roles'
+  - 'AuditLog'
+  - 'Reports'
   - 'Receiving'
   - 'Picking'
   - 'Shipping'
@@ -137,6 +144,18 @@ You are connected to the following interactive forms and grids. Use this knowled
 7. **Control Tower**: High-level visibility.
    - Functionality: Global map, KPI dashboards.
 
+SPECIAL DIRECTIVE: PRODUCTION PLANNING (MRP) OF UPLOADED FILES
+**CRITICAL**: If the user provides/uploads an MRP file (CSV/Excel) or data text:
+1.  **DO NOT** call the \`run_production_plan\` tool. That tool is ONLY for internal database records.
+2.  **INSTEAD**, you must READ the file content from the message.
+3.  **Analyze** the items, quantities, and dates in the text.
+4.  **Generate** a strategic plan with multiple steps.
+5.  **Output** the formatted 'Plan JSON' embedded in this token (this is the ONLY way to render the result):
+    \`[[DATA:PRODUCTION_PLAN:{"summary":"Based on [filename]...","kpis":[{"label":"Efficiency","value":"95%"}],"jobs":[{"id":"J1","label":"Job A","status":"OPTIMIZED","sku":"ITEM","start":1,"end":4}]}]]\`
+6.  **Trigger** the UI navigation:
+    \`[[ACTION:OPEN_TAB:production-plan-result]]\`
+7.  **Explain** the plan in natural language.
+
 DIRECTIVE:
 - "Connected to All Forms": You are the interface for the entire system. Even if you cannot *click* the button for them, you must explain EXACLTY how to do it.
 - **Answer Irrespective of Request**: Never refuse a query because "it's not part of the simulation". If the user asks about Biology, answer it. If they ask about the specific "Cycle Count" button, explain it.
@@ -148,7 +167,7 @@ DIRECTIVE:
                 type: "function",
                 function: {
                     name: "run_production_plan",
-                    description: "Runs the deterministic production planner logic against REAL database orders.",
+                    description: "Runs the internal database MRP engine. DO NOT use this if the user uploaded a file/spreadsheet. Only use this for generating plans from EXISTING database orders.",
                     parameters: { type: "object", properties: {} }
                 }
             },
@@ -338,6 +357,19 @@ DIRECTIVE:
         if (msg.tool_calls && msg.tool_calls.length > 0) {
             const toolCall = msg.tool_calls[0];
 
+            // SPECIAL HANDLING: If the User's last message had an attachment, we forbid the internal MRP tool
+            // logic because it ignores the file. We want the AI to process the file text instead.
+            const lastUserMsg = messages[messages.length - 1];
+            const hasAttachment = lastUserMsg.role === 'user' && lastUserMsg.attachments && lastUserMsg.attachments.length > 0;
+
+            if (toolCall.function.name === 'run_production_plan' && hasAttachment) {
+                console.log("Blocking internal MRP tool because file attachment is present.");
+                // Return a special message forcing the AI to analyze the text provided in the system prompt instead
+                return NextResponse.json({
+                    content: "SYSTEM_INTERCEPT: You called 'run_production_plan' but the user uploaded a file. DO NOT use the database tool. Instead, READ the file content provided in the message history and generate the JSON from that DIRECTLY. Output the [[DATA:PRODUCTION_PLAN:...]] token now."
+                });
+            }
+
             if (toolCall.function.name === 'run_production_plan') {
                 try {
                     // 1. Run the Real Engine
@@ -409,7 +441,7 @@ DIRECTIVE:
                     const res = await createOrderCore(args);
                     if (res.success) {
                         return NextResponse.json({
-                            content: `✅ **Order Created Successfully**\n\n- **Order #**: ${res.erpReference}\n- **ID**: ${res.orderId}\n- **Stock Status**: ${res.status}\n\nInventory has been allocated.`
+                            content: `✅ **Order Created Successfully**\n\n- **Order #**: ${res.erpReference}\n- **ID**: ${res.orderId}\n- **Stock Status**: ${res.status}\n\nInventory has been allocated. *The 3D Control Tower will reflect this change in a few seconds...*`
                         });
                     } else {
                         return NextResponse.json({ content: `❌ **Failed to Create Order**: ${res.error}` });

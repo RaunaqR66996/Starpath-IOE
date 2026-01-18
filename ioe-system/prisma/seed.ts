@@ -5,14 +5,31 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-    console.log('Start seeding G-Shock Manufacturing Data (v2 Spatial)...')
+    console.log('Start seeding G-Shock Manufacturing Data (v2 Spatial) - ENTERPRISE MODE...')
+
+    // --- 0. ENTERPRISE BOOTSTRAP ---
+    const org = await prisma.organization.upsert({
+        where: { domain: 'starpath.com' },
+        update: {},
+        create: {
+            id: 'org-global-01',
+            name: 'StarPath Manufacturing Global',
+            domain: 'starpath.com',
+            plan: 'ENTERPRISE'
+        }
+    });
+    console.log(`Organization Verified: ${org.name} (${org.id})`);
+    const ORG_ID = org.id;
+
 
     // --- AHA #3: SPATIAL INTELLIGENCE ---
     // 0. Zones (The Map)
     const upsertZone = async (name: string, type: string, x: number, y: number) => {
         const existing = await prisma.zone.findFirst({ where: { name } });
         if (existing) return existing;
-        return await prisma.zone.create({ data: { name, type, x, y } });
+        return await prisma.zone.create({
+            data: { name, type, x, y, organizationId: ORG_ID }
+        });
     };
 
     const zDock = await upsertZone("Warehouse Dock", "DOCK", 0, 0);
@@ -24,33 +41,32 @@ async function main() {
     console.log('Zones created.');
 
     // 0.1 Transit Times (The Distance)
-    // Clear existing transits to avoid unique constraint issues on re-run
     await prisma.transitTime.deleteMany({});
 
+    // Transits link Zones, which are now strictly Org-owned.
     await prisma.transitTime.createMany({
         data: [
-            { fromZoneId: zDock.id, toZoneId: zMold.id, minutes: 15 }, // Raw Material -> Molding
-            { fromZoneId: zMold.id, toZoneId: zAsy.id, minutes: 5 },   // Bezel -> Assembly
-            { fromZoneId: zDock.id, toZoneId: zAsy.id, minutes: 10 },  // Components -> Assembly
-            { fromZoneId: zAsy.id, toZoneId: zTest.id, minutes: 5 },   // Watch -> Test
-            { fromZoneId: zTest.id, toZoneId: zPack.id, minutes: 5 },  // Tested -> Pack
-            { fromZoneId: zPack.id, toZoneId: zDock.id, minutes: 10 }, // Packed -> Ship
+            { fromZoneId: zDock.id, toZoneId: zMold.id, minutes: 15 },
+            { fromZoneId: zMold.id, toZoneId: zAsy.id, minutes: 5 },
+            { fromZoneId: zDock.id, toZoneId: zAsy.id, minutes: 10 },
+            { fromZoneId: zAsy.id, toZoneId: zTest.id, minutes: 5 },
+            { fromZoneId: zTest.id, toZoneId: zPack.id, minutes: 5 },
+            { fromZoneId: zPack.id, toZoneId: zDock.id, minutes: 10 },
         ]
     });
     console.log('Transit Grid calculated.');
 
     // 1. Work Centers (The Factory)
-    // Helper to safely upsert
     const upsertWC = async (code: string, name: string, type: string, hours: number, zoneId: string) => {
         const existing = await prisma.workCenter.findUnique({ where: { code } });
         if (existing) {
             return await prisma.workCenter.update({
                 where: { code },
-                data: { name, type, capacityHours: hours, zoneId }
+                data: { name, type, capacityHours: hours, zoneId, organizationId: ORG_ID }
             });
         }
         return await prisma.workCenter.create({
-            data: { code, name, type, capacityHours: hours, zoneId }
+            data: { code, name, type, capacityHours: hours, zoneId, organizationId: ORG_ID }
         });
     };
 
@@ -67,11 +83,11 @@ async function main() {
         if (existing) {
             return await prisma.item.update({
                 where: { sku },
-                data: { name, type, cost, leadTimeDays: lead }
+                data: { name, type, cost, leadTimeDays: lead, organizationId: ORG_ID }
             });
         }
         return await prisma.item.create({
-            data: { sku, name, type, cost, leadTimeDays: lead }
+            data: { sku, name, type, cost, leadTimeDays: lead, organizationId: ORG_ID }
         });
     };
 
@@ -89,7 +105,6 @@ async function main() {
     console.log('Items ready.');
 
     // 3. BOMs
-    // Prune existing BOMs
     const parentIds = [bezel.id, dw5600.id];
     await prisma.bom.deleteMany({
         where: { parentId: { in: parentIds } }
@@ -141,6 +156,7 @@ async function main() {
             data: {
                 name: 'Macy\'s Retail',
                 tier: 'Premium',
+                organizationId: ORG_ID,
                 defaultAddress: JSON.stringify({ city: 'New York', state: 'NY' })
             }
         });
@@ -154,6 +170,7 @@ async function main() {
                 erpReference: orderRef,
                 customerId: customer.id,
                 customerName: customer.name,
+                organizationId: ORG_ID,
                 originId: 'Factory',
                 destination: JSON.stringify({ city: 'New York' }),
                 status: 'CONFIRMED',
@@ -174,14 +191,13 @@ async function main() {
         console.log('G-Shock Order already exists.');
     }
 
-    // 6. Inventory Start (Optional for logic check)
-    // Seed initial stock of Resin at the Dock (Alive Inventory Logic)
-    await prisma.inventory.deleteMany({ where: { itemId: resin.id } });
+    // 6. Inventory
+    await prisma.inventory.deleteMany({ where: { itemId: { in: [resin.id, module5600.id, glass.id] } } });
 
-    // 1. Available Stock (300)
     await prisma.inventory.create({
         data: {
             itemId: resin.id,
+            organizationId: ORG_ID,
             warehouseId: 'WH-01',
             zoneId: zDock.id,
             quantity: 300,
@@ -191,10 +207,10 @@ async function main() {
         }
     });
 
-    // 2. Blocked Stock (200) - Aha #2
     await prisma.inventory.create({
         data: {
             itemId: resin.id,
+            organizationId: ORG_ID,
             warehouseId: 'WH-01',
             zoneId: zDock.id,
             quantity: 200,
@@ -205,19 +221,31 @@ async function main() {
         }
     });
 
-    // Seed Module & Glass
-    await prisma.inventory.deleteMany({ where: { itemId: { in: [module5600.id, glass.id] } } });
     await prisma.inventory.create({
-        data: { itemId: module5600.id, warehouseId: 'WH-01', zoneId: zDock.id, quantity: 500, locationId: 'Bin-M1', status: 'AVAILABLE' }
+        data: {
+            itemId: module5600.id,
+            organizationId: ORG_ID,
+            warehouseId: 'WH-01',
+            zoneId: zDock.id,
+            quantity: 500,
+            locationId: 'Bin-M1',
+            status: 'AVAILABLE'
+        }
     });
-    await prisma.inventory.create({
-        data: { itemId: glass.id, warehouseId: 'WH-01', zoneId: zDock.id, quantity: 500, locationId: 'Bin-G1', status: 'AVAILABLE' }
-    });
-    // But wait, order is 200. Bezel needs 0.2 -> 40.0. So 50 is enough.
-    // Transit Dock -> Molding is 15 mins.
-    // So "Bezel" production start should be delayed by 15 mins.
 
-    console.log('Seeding finished.')
+    await prisma.inventory.create({
+        data: {
+            itemId: glass.id,
+            organizationId: ORG_ID,
+            warehouseId: 'WH-01',
+            zoneId: zDock.id,
+            quantity: 500,
+            locationId: 'Bin-G1',
+            status: 'AVAILABLE'
+        }
+    });
+
+    console.log('Seeding finished.');
 }
 
 main()

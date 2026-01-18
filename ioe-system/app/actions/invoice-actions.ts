@@ -36,8 +36,12 @@ export async function generateInvoice(orderId: string) {
             }
         });
 
-        revalidatePath('/orders');
-        revalidatePath('/finance');
+        try {
+            revalidatePath('/orders');
+            revalidatePath('/finance');
+        } catch (e) {
+            // Context error in scripts, ignore
+        }
         return { success: true, invoice };
 
     } catch (error: any) {
@@ -51,7 +55,12 @@ export async function getInvoices() {
         const invoices = await db.invoice.findMany({
             include: {
                 order: {
-                    include: { customer: true }
+                    include: {
+                        customer: true,
+                        lines: {
+                            include: { item: true }
+                        }
+                    }
                 }
             },
             orderBy: { createdAt: 'desc' }

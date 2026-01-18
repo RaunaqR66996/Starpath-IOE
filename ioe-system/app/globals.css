@@ -18,6 +18,39 @@
   --color-item-active: var(--item-active-bg);
 }
 
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--color-accent); }
+  50% { opacity: 0.7; box-shadow: 0 0 20px var(--color-accent); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
 :root {
   /* Default: Cosmic Dark */
   --bg-activity-bar: #000000;
@@ -33,10 +66,14 @@
   
   --accent-color: #34d399; /* emerald-400 */
   --accent-hover: #10b981;
+  --accent-cyan: #06b6d4; /* cyan-500 */
+  --accent-neon: #00f3ff; /* Electric cyan */
   
   --item-hover-bg: #262626;
   --item-active-bg: #262626;
 }
+
+/* ... existing theme overrides ... */
 
 [data-theme='light'] {
   /* Polar Ice */

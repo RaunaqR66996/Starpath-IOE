@@ -25,7 +25,7 @@ export function GenericFormView({ title, fields, type = 'Generic' }: GenericForm
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    type: title.replace(/\s+/g, ''), // Simple normalization for type key if not provided
+                    type: (type && type !== 'Generic') ? type : title.replace(/\s+/g, ''),
                     payload: formData
                 })
             });
@@ -34,7 +34,14 @@ export function GenericFormView({ title, fields, type = 'Generic' }: GenericForm
                 setMessage({ text: 'Record saved successfully!', type: 'success' });
                 setFormData({}); // Clear form on success
             } else {
-                setMessage({ text: 'Failed to save record.', type: 'error' });
+                let errorText = 'Failed to save record.';
+                try {
+                    const data = await res.json();
+                    if (data && data.error) errorText = data.error;
+                } catch (e) {
+                    // Ignore JSON parse error, use default message
+                }
+                setMessage({ text: errorText, type: 'error' });
             }
         } catch (e) {
             console.error(e);
@@ -190,124 +197,117 @@ export function getFormConfig(type: string): GenericFormViewProps {
             return {
                 title: "Employee Onboarding",
                 fields: [
-                    { label: "First Name", type: "text" }, { label: "Last Name", type: "text" },
-                    { label: "Department", type: "select" }, { label: "Start Date", type: "date" },
-                    { label: "Role", type: "text" }, { label: "Salary", type: "number" },
-                    ...commonFields.slice(5)
+                    { label: "firstName", type: "text" }, { label: "lastName", type: "text" },
+                    { label: "department", type: "select" }, { label: "startDate", type: "date" },
+                    { label: "role", type: "text" }, { label: "salary", type: "number" },
+                    { label: "email", type: "text" }
                 ]
             };
         case 'Finance':
             return {
                 title: "Invoice Processing",
                 fields: [
-                    { label: "Vendor", type: "text" }, { label: "Invoice Number", type: "text" },
-                    { label: "Amount", type: "number" }, { label: "Due Date", type: "date" },
-                    { label: "GL Account", type: "select" }, { label: "Approval Status", type: "select" },
-                    ...commonFields.slice(5)
+                    { label: "orderId", type: "text" }, { label: "invoiceNumber", type: "text" },
+                    { label: "amount", type: "number" }, { label: "dueDate", type: "date" },
+                    { label: "status", type: "select" }
                 ]
             };
         case 'Carrier':
             return {
-                title: "Carrier Contract",
+                title: "Carrier Master",
                 fields: [
-                    { label: "Carrier Name", type: "text" }, { label: "MC Number", type: "text" },
-                    { label: "Service Type", type: "select" }, { label: "Contract Rate", type: "number" },
-                    { label: "Insurance Expiry", type: "date" }, { label: "Lane Preference", type: "text" },
-                    ...commonFields.slice(5)
+                    { label: "name", type: "text" }, { label: "scac", type: "text" },
+                    { label: "mode", type: "select" }, { label: "rating", type: "number" },
+                    { label: "status", type: "select" }
                 ]
             };
-        case 'CostMgmt':
+        case 'Customer':
             return {
-                title: "Cost Management",
+                title: "Customer Master",
                 fields: [
-                    { label: "Cost Center", type: "text" }, { label: "Allocation Method", type: "select" },
-                    { label: "Amount", type: "number" }, { label: "Period", type: "date" },
-                    { label: "Variance Type", type: "select" }, { label: "Comments", type: "textarea" },
-                    ...commonFields.slice(5)
+                    { label: "name", type: "text" }, { label: "email", type: "text" },
+                    { label: "phone", type: "text" }, { label: "tier", type: "select" },
+                    { label: "defaultAddress", type: "textarea" }
                 ]
             };
-        case 'TimeAtt':
+        case 'Supplier':
             return {
-                title: "Time & Attendance",
+                title: "Supplier Master",
                 fields: [
-                    { label: "Employee ID", type: "text" }, { label: "Shift Date", type: "date" },
-                    { label: "Clock In", type: "text" }, { label: "Clock Out", type: "text" },
-                    { label: "Total Hours", type: "number" }, { label: "Overtime Reason", type: "textarea" }
+                    { label: "name", type: "text" }, { label: "contactName", type: "text" },
+                    { label: "email", type: "text" }
                 ]
             };
-        case 'PLM':
+        case 'Item':
             return {
-                title: "Product Lifecycle",
+                title: "Item Master",
                 fields: [
-                    { label: "Product ID", type: "text" }, { label: "Revision", type: "text" },
-                    { label: "Change Request ID", type: "text" }, { label: "Change Type", type: "select" },
-                    { label: "Approver", type: "text" }, { label: "Impact Analysis", type: "textarea" }
+                    { label: "sku", type: "text" }, { label: "name", type: "text" },
+                    { label: "category", type: "select" }, { label: "cost", type: "number" },
+                    { label: "price", type: "number" }, { label: "type", type: "select" },
+                    { label: "uom", type: "text" }, { label: "leadTimeDays", type: "number" },
+                    { label: "description", type: "textarea" }
+                ]
+            };
+        case 'WorkCenter':
+            return {
+                title: "Work Center",
+                fields: [
+                    { label: "name", type: "text" }, { label: "code", type: "text" },
+                    { label: "type", type: "select" }, { label: "capacityHours", type: "number" },
+                    { label: "efficiency", type: "number" }
                 ]
             };
         case 'Sales':
             return {
                 title: "Sales Order",
                 fields: [
-                    { label: "Customer Name", type: "text" }, { label: "Quote ID", type: "text" },
-                    { label: "Items", type: "textarea" }, { label: "Discount %", type: "number" },
-                    { label: "Total Value", type: "number" }, { label: "Delivery Date", type: "date" }
+                    { label: "customerId", type: "text" }, { label: "erpReference", type: "text" },
+                    { label: "requestedDeliveryDate", type: "date" }, { label: "totalValue", type: "number" },
+                    { label: "priority", type: "select" }
                 ]
             };
         case 'Purchase':
             return {
                 title: "Purchase Order",
                 fields: [
-                    { label: "Vendor Name", type: "text" }, { label: "Requisition ID", type: "text" },
-                    { label: "Items", type: "textarea" }, { label: "Currency", type: "select" },
-                    { label: "Total Cost", type: "number" }, { label: "Expected Delivery", type: "date" },
-                    { label: "Payment Terms", type: "text" }, { label: "Approver", type: "text" }
-                ]
-            };
-        case 'Items':
-            return {
-                title: "Item Master",
-                fields: [
-                    { label: "SKU", type: "text" }, { label: "Item Name", type: "text" },
-                    { label: "Category", type: "select" }, { label: "Unit Cost", type: "number" },
-                    { label: "Selling Price", type: "number" }, { label: "Supplier", type: "text" },
-                    { label: "Stock Level", type: "number" }, { label: "Reorder Point", type: "number" },
-                    { label: "Description", type: "textarea" }
+                    { label: "supplierId", type: "text" }, { label: "poNumber", type: "text" },
+                    { label: "expectedDate", type: "date" }
                 ]
             };
         case 'Project':
             return {
                 title: "Project Management",
                 fields: [
-                    { label: "Project Name", type: "text" }, { label: "Project Manager", type: "text" },
-                    { label: "Start Date", type: "date" }, { label: "End Date", type: "date" },
-                    { label: "Budget", type: "number" }, { label: "Key Milestones", type: "textarea" }
+                    { label: "name", type: "text" }, { label: "manager", type: "text" },
+                    { label: "startDate", type: "date" }, { label: "endDate", type: "date" },
+                    { label: "budget", type: "number" }, { label: "description", type: "textarea" }
                 ]
             };
         case 'Service':
             return {
                 title: "Service Management",
                 fields: [
-                    { label: "Ticket ID", type: "text" }, { label: "Customer", type: "text" },
-                    { label: "Issue Type", type: "select" }, { label: "Priority", type: "select" },
-                    { label: "Assigned Tech", type: "text" }, { label: "Resolution Notes", type: "textarea" }
+                    { label: "title", type: "text" }, { label: "customer", type: "text" },
+                    { label: "priority", type: "select" }, { label: "description", type: "textarea" }
                 ]
             };
         case 'GRC':
             return {
                 title: "Risk & Compliance",
                 fields: [
-                    { label: "Risk ID", type: "text" }, { label: "Category", type: "select" },
-                    { label: "Likelihood", type: "select" }, { label: "Impact Level", type: "select" },
-                    { label: "Mitigation Strategy", type: "textarea" }, { label: "Owner", type: "text" }
+                    { label: "title", type: "text" }, { label: "category", type: "select" },
+                    { label: "likelihood", type: "select" }, { label: "impact", type: "select" },
+                    { label: "mitigation", type: "textarea" }, { label: "owner", type: "text" },
+                    { label: "description", type: "textarea" }
                 ]
             };
-        case 'Admin':
-            return {
-                title: "System Administration",
+        case 'Stock':
+            return { // Maps to Inventory if needed, or simple correction
+                title: "Inventory Adjustment",
                 fields: [
-                    { label: "User ID", type: "text" }, { label: "Role", type: "select" },
-                    { label: "Access Level", type: "select" }, { label: "Department", type: "text" },
-                    { label: "Last Audit", type: "date" }, { label: "Permissions", type: "textarea" }
+                    { label: "itemId", type: "text" }, { label: "quantity", type: "number" },
+                    { label: "warehouseId", type: "text" }, { label: "locationId", type: "text" }
                 ]
             };
         // Add more default configs as needed, fallback to generic

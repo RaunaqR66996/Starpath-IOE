@@ -434,7 +434,7 @@ export function DocumentGenerator({ type, data, label }: DocumentGeneratorProps)
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-neutral-100">
-                        {order.lines.map((line: any, i: number) => (
+                        {(order?.lines || []).map((line: any, i: number) => (
                             <tr key={i}>
                                 <td className="py-4">
                                     <div className="font-bold">{line.item?.sku || line.itemId}</div>

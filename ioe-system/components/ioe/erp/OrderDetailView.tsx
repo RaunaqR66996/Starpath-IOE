@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Order } from "@/lib/types";
-import { ChevronLeft, Package, Truck, Clock, AlertCircle } from "lucide-react";
+import { Package, Truck, Clock, AlertCircle, FileText, MapPin, DollarSign, Building } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DocumentGenerator } from "@/components/ioe/DocumentGenerator";
 import { generateInvoice } from "@/app/actions/invoice-actions";
@@ -16,15 +16,12 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
     const [order, setOrder] = useState<Order | null>(null);
     const [tasks, setTasks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<"general" | "shipping" | "financials">("general");
 
     const fetchTasks = () => {
-        // Mock fetch for now as we might not have the filter implemented on API side yet
-        // In reality: fetch(`/api/tasks?orderId=${orderId}`)
-        // For now I'll just fetch all and filter client side or assume mock
         fetch('/api/tasks')
             .then(res => res.json())
             .then(data => {
-                // Filter for this order (hack until API supports filter)
                 const orderTasks = data.filter((t: any) => t.orderId === orderId);
                 setTasks(orderTasks);
             });
@@ -36,7 +33,6 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
         const taskTypes = ['CREDIT_CHECK', 'PICK', 'PACK', 'SHIP_RELEASE'];
 
         for (const type of taskTypes) {
-            // Create specific params for Pick tasks
             const extra = type === 'PICK' && order.lines.length > 0
                 ? { itemId: order.lines[0].itemId, qty: order.lines[0].qtyOrdered, locationId: 'A-01-01' }
                 : {};
@@ -60,7 +56,6 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
         setLoading(true);
         const res = await generateInvoice(order.id);
         if (res.success) {
-            // Re-fetch order to get invoice
             const fresh = await fetch(`/api/orders/${orderId}`).then(r => r.json());
             setOrder(fresh);
         }
@@ -105,6 +100,8 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
                             <span>{order.customerName}</span>
                             <span className="text-[var(--text-muted)]">•</span>
                             <span>{new Date(order.createdAt).toLocaleString()}</span>
+                            <span className="text-[var(--text-muted)]">•</span>
+                            <span className="font-mono text-emerald-400">PO-998877</span>
                         </div>
                     </div>
                 </div>
@@ -142,155 +139,235 @@ export function OrderDetailView({ orderId }: OrderDetailViewProps) {
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-                <div className="grid grid-cols-3 gap-6">
+            {/* Tab Navigation */}
+            <div className="flex border-b border-[var(--border-color)] bg-[var(--bg-panel-header)] px-6 pt-2 gap-4">
+                {[
+                    { id: "general", label: "General & Lines", icon: FileText },
+                    { id: "shipping", label: "Shipping & Logistics", icon: Truck },
+                    { id: "financials", label: "Financials & Tax", icon: DollarSign }
+                ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-colors",
+                            activeTab === tab.id
+                                ? "border-[var(--accent-color)] text-[var(--text-primary)]"
+                                : "border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                        )}
+                    >
+                        <tab.icon className="h-3 w-3" />
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
 
-                    {/* Main Info */}
-                    <div className="col-span-2 space-y-6">
-                        {/* Summary Cards */}
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
-                                <div className="text-xs text-[var(--text-muted)] mb-1">Total Value</div>
-                                <div className="text-xl font-mono text-[var(--text-primary)]">${order.totalValue.toLocaleString()}</div>
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto p-6">
+
+                {/* General Tab */}
+                {activeTab === "general" && (
+                    <div className="grid grid-cols-3 gap-6">
+                        {/* Header Info Block */}
+                        <div className="col-span-3 grid grid-cols-4 gap-4 mb-2">
+                            <div className="p-3 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <label className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Originating Site</label>
+                                <div className="text-sm font-medium mt-1 flex items-center gap-2">
+                                    <Building className="h-3 w-3 text-neutral-500" />
+                                    USDISP
+                                </div>
                             </div>
-                            <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
-                                <div className="text-xs text-[var(--text-muted)] mb-1">Total Weight</div>
-                                <div className="text-xl font-mono text-[var(--text-primary)]">{order.totalWeight} kg</div>
+                            <div className="p-3 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <label className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Warehouse</label>
+                                <div className="text-sm font-medium mt-1">NAL - North American Logistics</div>
                             </div>
-                            <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
-                                <div className="text-xs text-[var(--text-muted)] mb-1">Priority</div>
-                                <div className={cn("text-xl font-bold", order.priority === "HIGH" ? "text-amber-500" : "text-[var(--text-muted)]")}>
-                                    {order.priority}
+                            <div className="p-3 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <label className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Order Date</label>
+                                <div className="text-sm font-medium mt-1">{new Date(order.createdAt).toLocaleDateString()}</div>
+                            </div>
+                            <div className="p-3 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <label className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Req. Ship Date</label>
+                                <div className="text-sm font-medium mt-1">{new Date(order.requestedDeliveryDate).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+
+                        {/* Main Line Items */}
+                        <div className="col-span-2 space-y-6">
+                            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] overflow-hidden">
+                                <div className="bg-[var(--item-active-bg)] px-4 py-3 border-b border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] flex justify-between items-center">
+                                    <span>Line Items</span>
+                                    <span className="text-xs text-[var(--text-muted)]">{order.lines.length} Lines</span>
+                                </div>
+                                <div>
+                                    {order.lines.map((line) => (
+                                        <div key={line.lineNumber} className="flex items-center justify-between border-b border-[var(--border-color)] px-4 py-3 last:border-0 hover:bg-[var(--item-hover-bg)]">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 rounded bg-[var(--item-active-bg)] flex items-center justify-center text-xs font-mono text-[var(--text-muted)]">
+                                                    {line.lineNumber}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm text-[var(--text-primary)] font-medium">{line.itemId}</div>
+                                                    <div className="text-xs text-[var(--text-muted)]">Qty: {line.qtyOrdered} EA</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-sm font-mono text-[var(--text-secondary)]">${line.unitPrice}</div>
+                                                <div className="text-xs text-emerald-500 font-medium">Allocated: {line.qtyAllocated}</div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Line Items */}
-                        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] overflow-hidden">
-                            <div className="bg-[var(--item-active-bg)] px-4 py-3 border-b border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)]">
-                                Line Items
-                            </div>
-                            <div>
-                                {order.lines.map((line) => (
-                                    <div key={line.lineNumber} className="flex items-center justify-between border-b border-[var(--border-color)] px-4 py-3 last:border-0 hover:bg-[var(--item-hover-bg)]">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-8 w-8 rounded bg-[var(--item-active-bg)] flex items-center justify-center text-xs font-mono text-[var(--text-muted)]">
-                                                {line.lineNumber}
+                        {/* Right Sidebar (Execution) */}
+                        <div className="space-y-6">
+                            {/* Execution Status */}
+                            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2">
+                                        <AlertCircle className="h-3 w-3" /> Execution
+                                    </h3>
+                                    {tasks.length === 0 && (
+                                        <button
+                                            onClick={handleGenerateTasks}
+                                            className="text-[10px] bg-emerald-900/50 text-emerald-400 border border-emerald-900 px-2 py-0.5 rounded hover:bg-emerald-900"
+                                        >
+                                            Release to Warehouse
+                                        </button>
+                                    )}
+                                </div>
+
+                                {tasks.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {tasks.map((task, i) => (
+                                            <div key={i} className="flex items-center justify-between p-2 rounded bg-[var(--item-hover-bg)] border border-[var(--border-color)]">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={cn("w-2 h-2 rounded-full",
+                                                        task.status === 'COMPLETED' ? "bg-emerald-500" :
+                                                            task.status === 'IN_PROGRESS' ? "bg-amber-500" : "bg-[var(--text-muted)]"
+                                                    )} />
+                                                    <span className="text-xs text-[var(--text-secondary)] font-mono">{task.type}</span>
+                                                </div>
+                                                <span className="text-[10px] text-[var(--text-muted)]">{task.status}</span>
                                             </div>
-                                            <div>
-                                                <div className="text-sm text-[var(--text-primary)] font-medium">{line.itemId}</div>
-                                                <div className="text-xs text-[var(--text-muted)]">Qty: {line.qtyOrdered}</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-mono text-[var(--text-secondary)]">${line.unitPrice}</div>
-                                            <div className="text-xs text-emerald-500 font-medium">Allocated: {line.qtyAllocated}</div>
-                                        </div>
+                                        ))}
                                     </div>
-                                ))}
+                                ) : (
+                                    <div className="text-[10px] text-[var(--text-muted)] italic py-2 text-center">
+                                        Awaiting Release
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
+                )}
 
-                    {/* Sidebar Info */}
-                    <div className="space-y-6">
-                        {/* Destination */}
+                {/* Shipping Tab */}
+                {activeTab === "shipping" && (
+                    <div className="grid grid-cols-2 gap-6">
                         <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
                             <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <Truck className="h-3 w-3" /> Destination
+                                <Truck className="h-3 w-3" /> Ship To Address
                             </h3>
-                            <div className="text-sm text-[var(--text-secondary)] space-y-1">
+                            <div className="text-sm font-mono text-[var(--text-primary)] space-y-1 p-3 bg-black/50 rounded border border-[var(--border-color)]">
+                                <div className="text-xs text-[var(--text-muted)] mb-2">ID: 1 - Default Location</div>
                                 <p>{order.destination.street}</p>
                                 <p>{order.destination.city}, {order.destination.state} {order.destination.zip}</p>
                                 <p className="text-[var(--text-muted)]">{order.destination.country}</p>
                             </div>
-                        </div>
-
-                        {/* Dates */}
-                        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
-                            <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <Clock className="h-3 w-3" /> Timeline
-                            </h3>
-                            <div className="space-y-3">
-                                <div>
-                                    <div className="text-[10px] text-[var(--text-muted)]">Requested Delivery</div>
-                                    <div className="text-sm text-[var(--text-secondary)]">
-                                        {new Date(order.requestedDeliveryDate).toLocaleDateString()}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="text-[10px] text-[var(--text-muted)]">Created At</div>
-                                    <div className="text-sm text-[var(--text-secondary)]">
-                                        {new Date(order.createdAt).toLocaleDateString()}
-                                    </div>
-                                </div>
+                            <div className="mt-4 flex items-center gap-2">
+                                <input type="checkbox" checked readOnly className="rounded border-neutral-700 bg-neutral-900 text-blue-500" />
+                                <span className="text-sm text-neutral-400">Ship Complete Only</span>
                             </div>
                         </div>
 
-                        {/* Shipment Info */}
+                        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
+                            <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Truck className="h-3 w-3" /> Bill To Address
+                            </h3>
+                            <div className="text-sm font-mono text-[var(--text-primary)] space-y-1 p-3 bg-black/50 rounded border border-[var(--border-color)]">
+                                <div className="text-xs text-[var(--text-muted)] mb-2">ID: BILLSHA-01 (Headquarters)</div>
+                                <p>L'OREAL USA PRODUCTS, INC</p>
+                                <p>ACCOUNTS PAYABLE</p>
+                                <p>PO BOX 1529</p>
+                                <p>BOUNTIFUL, UT 84011</p>
+                            </div>
+                        </div>
+
                         {order.shipmentId && (
-                            <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
-                                <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <Truck className="h-3 w-3" /> Shipment
-                                </h3>
-                                <div className="space-y-3">
+                            <div className="col-span-2 rounded-xl border border-dotted border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
+                                <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-3">Freight Details</h3>
+                                <div className="flex items-center gap-8">
                                     <div>
-                                        <div className="text-[10px] text-[var(--text-muted)]">Assigned Shipment</div>
-                                        <div className="text-sm font-mono text-blue-400 cursor-pointer underline hover:text-blue-300"
-                                            onClick={() => window.open(`/shipments/${order.shipmentId}`, '_blank')}>
-                                            {/* Note: In a real app we would use a router or context to open the tab */}
-                                            {order.shipmentId}
-                                        </div>
+                                        <div className="text-[10px] text-[var(--text-muted)]">Carrier</div>
+                                        <div className="text-sm font-medium">FEDEX FREIGHT</div>
                                     </div>
-                                    <div className="text-[10px] text-[var(--text-muted)] italic">
-                                        Click to view shipment details
+                                    <div>
+                                        <div className="text-[10px] text-[var(--text-muted)]">Pro Number</div>
+                                        <div className="text-sm font-medium font-mono">PRO-9988776655</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] text-[var(--text-muted)]">Terms</div>
+                                        <div className="text-sm font-medium">PREPAID</div>
                                     </div>
                                 </div>
                             </div>
                         )}
+                    </div>
+                )}
 
-                        {/* Order Execution Tasks */}
-                        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-panel-header)] p-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-2">
-                                    <AlertCircle className="h-3 w-3" /> Execution
-                                </h3>
-                                {tasks.length === 0 && (
-                                    <button
-                                        onClick={handleGenerateTasks}
-                                        className="text-[10px] bg-emerald-900/50 text-emerald-400 border border-emerald-900 px-2 py-0.5 rounded hover:bg-emerald-900"
-                                    >
-                                        Start
-                                    </button>
-                                )}
+                {/* Financials Tab */}
+                {activeTab === "financials" && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-4 gap-4">
+                            <div className="p-4 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <div className="text-[10px] text-[var(--text-muted)] uppercase">Payment Terms</div>
+                                <div className="text-lg font-medium">Net 30</div>
                             </div>
+                            <div className="p-4 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <div className="text-[10px] text-[var(--text-muted)] uppercase">Currency</div>
+                                <div className="text-lg font-medium">USD</div>
+                            </div>
+                            <div className="p-4 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <div className="text-[10px] text-[var(--text-muted)] uppercase">Tax Schedule</div>
+                                <div className="text-lg font-medium">AVATAX-STD</div>
+                            </div>
+                            <div className="p-4 bg-[var(--item-active-bg)] rounded border border-[var(--border-color)]">
+                                <div className="text-[10px] text-[var(--text-muted)] uppercase">Credit Status</div>
+                                <div className="text-lg font-medium text-emerald-500 flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                    APPROVED
+                                </div>
+                            </div>
+                        </div>
 
-                            {tasks.length > 0 ? (
-                                <div className="space-y-2">
-                                    {tasks.map((task, i) => (
-                                        <div key={i} className="flex items-center justify-between p-2 rounded bg-[var(--item-hover-bg)] border border-[var(--border-color)]">
-                                            <div className="flex items-center gap-2">
-                                                <div className={cn("w-2 h-2 rounded-full",
-                                                    task.status === 'COMPLETED' ? "bg-emerald-500" :
-                                                        task.status === 'IN_PROGRESS' ? "bg-amber-500" : "bg-[var(--text-muted)]"
-                                                )} />
-                                                <span className="text-xs text-[var(--text-secondary)] font-mono">{task.type}</span>
-                                            </div>
-                                            <span className="text-[10px] text-[var(--text-muted)]">{task.status}</span>
-                                        </div>
-                                    ))}
+                        <div className="w-1/2 p-6 bg-[var(--bg-panel-header)] rounded border border-[var(--border-color)]">
+                            <h3 className="text-sm font-bold border-b border-[var(--border-color)] pb-2 mb-4">Total Breakdown</h3>
+                            <div className="space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-[var(--text-muted)]">Subtotal</span>
+                                    <span>${(order.totalValue * 0.9).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                 </div>
-                            ) : (
-                                <div className="text-[10px] text-[var(--text-muted)] italic py-2 text-center">
-                                    No active tasks
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-[var(--text-muted)]">Freight (Est)</span>
+                                    <span>${(order.totalValue * 0.05).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                 </div>
-                            )}
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-[var(--text-muted)]">Tax</span>
+                                    <span>${(order.totalValue * 0.05).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                </div>
+                                <div className="border-t border-[var(--border-color)] pt-2 mt-2 flex justify-between text-lg font-bold">
+                                    <span>Total</span>
+                                    <span>${order.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                )}
 
-                </div>
             </div>
         </div>
     );
 }
+

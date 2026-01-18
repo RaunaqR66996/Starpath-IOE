@@ -2,6 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CalendarEditor } from "./editors/CalendarEditor";
+import { ProductionPlanResult } from "./ProductionPlanResult";
 
 
 
@@ -9,6 +10,7 @@ interface PlanningTab {
     id: string;
     label: string;
     closable?: boolean;
+    data?: any; // Allow data passing
 }
 
 interface PlanningEditorTabsProps {
@@ -61,14 +63,14 @@ export function PlanningEditorTabs({ tabs, activeTab, onSelectTab, onCloseTab }:
             {/* Editor Content */}
             <div className="flex-1 overflow-hidden">
                 {activeTab && (
-                    <PlanningEditorContent tabId={activeTab} />
+                    <PlanningEditorContent tabId={activeTab} tab={tabs.find(t => t.id === activeTab)} />
                 )}
             </div>
         </div>
     );
 }
 
-function PlanningEditorContent({ tabId }: { tabId: string }) {
+function PlanningEditorContent({ tabId, tab }: { tabId: string, tab?: PlanningTab }) {
     // Route to appropriate editor based on tab ID
     const getEditorComponent = () => {
 
@@ -108,6 +110,10 @@ function PlanningEditorContent({ tabId }: { tabId: string }) {
         }
         if (tabId.includes("calendars")) {
             return <CalendarEditor tabId={tabId} />;
+        }
+        if (tabId.includes("production-plan-result")) {
+            // Pass the planData if found in the tab object
+            return <ProductionPlanResult planData={tab?.data?.planData} />;
         }
 
 

@@ -6,6 +6,8 @@ import * as THREE from 'three';
 import { getLiveInventory } from "@/app/actions/inventory-actions";
 import { getFleetStatus, AMRUnit, emergencyStopAll, dispatchRobot } from "@/app/actions/wcs-actions";
 import { FleetManager } from "./FleetManager";
+import { InventoryGrid } from "../erp/InventoryGrid";
+import { Database, Box } from "lucide-react"; // Icons
 
 // Base layout structure (Geometry)
 const BASE_LAYOUT = {
@@ -53,17 +55,33 @@ export function InventoryWorkspace({ activeSite = "Texas" }: { activeSite?: stri
     const [fleet, setFleet] = useState<AMRUnit[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        setLoading(true);
-        Promise.all([
-            getLiveInventory(),
-            getFleetStatus()
-        ]).then(([inv, robots]) => {
+    // View Mode State: "3d" | "ledger"
+    const [viewMode, setViewMode] = useState<"3d" | "ledger">("3d");
+
+    const fetchData = React.useCallback(async (showLoading = false) => {
+        if (showLoading) setLoading(true);
+        try {
+            const [inv, robots] = await Promise.all([
+                getLiveInventory(),
+                getFleetStatus()
+            ]);
             setLiveInventory(inv);
             setFleet(robots);
-            setLoading(false);
-        });
-    }, [activeSite]); // Refetch/Re-render on site change
+        } catch (e) {
+            console.error("Polling error:", e);
+        } finally {
+            if (showLoading) setLoading(false);
+        }
+    }, [activeSite]);
+
+    useEffect(() => {
+        // Initial Fetch
+        fetchData(true);
+
+        // Poll every 5 seconds for "Live Sync" effect (Wedge Demo)
+        const interval = setInterval(() => fetchData(false), 5000);
+        return () => clearInterval(interval);
+    }, [fetchData]);
 
     const handleDispatch = async (id: string) => {
         // Mock a dispatch to a random area
@@ -113,6 +131,23 @@ export function InventoryWorkspace({ activeSite = "Texas" }: { activeSite?: stri
     const handleBinHover = (binId: string | null) => setHighlightedBinIds(binId ? [binId] : []);
     const handleStagingClick = (laneId: string) => console.log('Staging lane clicked:', laneId);
 
+    // Map Inventory for Grid
+    const gridItems = useMemo(() => {
+        return liveInventory
+            .filter(inv => !activeSite || (inv.warehouseId && inv.warehouseId.toLowerCase().includes(activeSite.toLowerCase())))
+            .map(i => ({
+                id: i.id,
+                itemId: i.itemId,
+                itemName: i.item?.name || "Unknown Item",
+                sku: i.item?.sku || "UNKNOWN",
+                locationId: i.locationId || i.binId || "Pending Putaway",
+                warehouseId: i.warehouseId,
+                quantity: i.quantity,
+                status: i.status as any,
+                updatedAt: i.updatedAt
+            }));
+    }, [liveInventory, activeSite]);
+
     return (
         <div className="flex h-full w-full overflow-hidden bg-[#0a0a0a] relative">
             {/* Controls Overlay */}
@@ -121,42 +156,73 @@ export function InventoryWorkspace({ activeSite = "Texas" }: { activeSite?: stri
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                     Neural Warehouse v1.0
                 </div>
-                <div className="flex items-center gap-3">
-                    <input
-                        type="checkbox"
-                        checked={showHeatmap}
-                        onChange={(e) => setShowHeatmap(e.target.checked)}
-                        className="w-4 h-4 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-600"
-                    />
-                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Inventory Heatmap</span>
+
+                {/* View Switcher */}
+                <div className="flex bg-white/5 rounded-lg p-1 gap-1">
+                    <button
+                        onClick={() => setViewMode("3d")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "3d" ? "bg-emerald-600 text-white shadow-lg" : "text-neutral-400 hover:text-white hover:bg-white/5"
+                            }`}
+                    >
+                        <Box className="w-3 h-3" />
+                        Twin
+                    </button>
+                    <button
+                        onClick={() => setViewMode("ledger")}
+                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded text-[10px] font-bold uppercase tracking-wider transition-all ${viewMode === "ledger" ? "bg-emerald-600 text-white shadow-lg" : "text-neutral-400 hover:text-white hover:bg-white/5"
+                            }`}
+                    >
+                        <Database className="w-3 h-3" />
+                        Ledger
+                    </button>
                 </div>
+
+                {viewMode === "3d" && (
+                    <div className="flex items-center gap-3">
+                        <input
+                            type="checkbox"
+                            checked={showHeatmap}
+                            onChange={(e) => setShowHeatmap(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/10 bg-white/5 text-blue-600 focus:ring-blue-600"
+                        />
+                        <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-widest">Inventory Heatmap</span>
+                    </div>
+                )}
             </div>
 
-            <div className="flex-1 flex relative">
-                {/* @ts-ignore */}
-                <Warehouse3DScene
-                    layout={fullLayout}
-                    selectedBinId={selectedBinId}
-                    highlightedBinIds={highlightedBinIds}
-                    showHeatmap={showHeatmap}
-                    showLabels={true}
-                    showPickPath={false}
-                    fleet={fleet}
-                    onBinClick={handleBinClick}
-                    onBinHover={handleBinHover}
-                    onStagingClick={handleStagingClick}
-                />
-
-                {/* Right Side: WCS Command Console */}
-                <div className="w-[320px] p-4 h-full relative z-10 pointer-events-none">
-                    <div className="h-full pointer-events-auto">
-                        <FleetManager
+            <div className="flex-1 flex relative overflow-hidden">
+                {viewMode === "3d" ? (
+                    <>
+                        {/* @ts-ignore */}
+                        <Warehouse3DScene
+                            layout={fullLayout}
+                            selectedBinId={selectedBinId}
+                            highlightedBinIds={highlightedBinIds}
+                            showHeatmap={showHeatmap}
+                            showLabels={true}
+                            showPickPath={false}
                             fleet={fleet}
-                            onDispatch={handleDispatch}
-                            onStop={handleStop}
+                            onBinClick={handleBinClick}
+                            onBinHover={handleBinHover}
+                            onStagingClick={handleStagingClick}
                         />
+
+                        {/* Right Side: WCS Command Console (only in 3D) */}
+                        <div className="w-[320px] p-4 h-full relative z-10 pointer-events-none">
+                            <div className="h-full pointer-events-auto">
+                                <FleetManager
+                                    fleet={fleet}
+                                    onDispatch={handleDispatch}
+                                    onStop={handleStop}
+                                />
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    <div className="flex-1 h-full overflow-hidden bg-[var(--bg-editor)] p-4 pt-20"> {/* pt-20 to clear absolute overlay */}
+                        <InventoryGrid items={gridItems} />
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

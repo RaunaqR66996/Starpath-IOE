@@ -108,7 +108,11 @@ export async function createOrderCore(input: { customerName: string, sku: string
             }
         });
 
-        revalidatePath('/');
+        try {
+            revalidatePath('/');
+        } catch (e) {
+            // Context error from script, ignore
+        }
         return { success: true, orderId: newOrder.id, status: stockStatus, erpReference: newOrder.erpReference };
 
     } catch (error: any) {

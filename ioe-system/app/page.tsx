@@ -86,8 +86,9 @@ export default function IOEPage() {
     setActiveTab(tabId);
   };
 
+
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-black text-white selection:bg-neutral-800">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-black text-white selection:bg-neutral-800 relative">
       {/* 1. Top Menubar */}
       <TopMenu />
 
@@ -216,11 +217,18 @@ export default function IOEPage() {
       {/* Status Bar Placeholder */}
       <footer className="hidden h-6 w-full items-center border-t border-neutral-800 bg-black px-3 text-[10px] text-neutral-500">
         <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="flex items-center gap-1.5 hover:text-emerald-400 transition-colors cursor-pointer">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Central Node ({activeSite})
           </span>
-          <span>Main Service</span>
+          <span className="flex items-center gap-1.5">
+            <div className="h-1 w-1 rounded-full bg-cyan-500/50" />
+            Main Service
+          </span>
+          <span className="flex items-center gap-1.5 text-neutral-600">
+            <div className="h-1 w-1 rounded-full bg-neutral-600" />
+            Latency: 12ms
+          </span>
         </div>
         <div className="ml-auto flex items-center gap-4">
           <span>UTF-8</span>

@@ -475,6 +475,11 @@ function WarehouseScene({
         />
       ))}
 
+      {/* Render Robots */}
+      {fleet.map((robot) => (
+        <RobotComponent key={robot.id} robot={robot} />
+      ))}
+
 
 
       {/* Environment */}

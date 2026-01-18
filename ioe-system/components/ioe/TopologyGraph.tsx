@@ -58,19 +58,30 @@ export function TopologyGraph({ nodes, links }: TopologyGraphProps) {
         <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden relative">
             <svg
                 viewBox={`0 0 ${layout.width} ${layout.height}`}
-                className="w-full h-full max-w-4xl"
-                style={{ filter: 'drop-shadow(0 0 20px rgba(59,130,246,0.1))' }}
+                className="w-full h-full max-w-4xl bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900/50 via-black to-black"
+                style={{ filter: 'drop-shadow(0 0 40px rgba(52,211,153,0.1))' }}
             >
                 {/* Definitions for Gr gradients/markers */}
                 <defs>
                     <linearGradient id="linkGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-                        <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
+                        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.1" />
+                        <stop offset="50%" stopColor="#34d399" stopOpacity="0.8" />
+                        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.1" />
                     </linearGradient>
+                    <radialGradient id="nodeGlow">
+                        <stop offset="0%" stopColor="#34d399" stopOpacity="0.6" />
+                        <stop offset="100%" stopColor="#34d399" stopOpacity="0" />
+                    </radialGradient>
                     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="28" refY="3.5" orient="auto">
-                        <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" fillOpacity="0.5" />
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#34d399" fillOpacity="0.8" />
                     </marker>
+                    {/* Grid Pattern */}
+                    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#333" strokeWidth="0.5" strokeOpacity="0.3" />
+                    </pattern>
                 </defs>
+
+                <rect width="100%" height="100%" fill="url(#grid)" opacity="0.4" />
 
                 {/* 2. Render Links */}
                 {links.map((link, i) => {
@@ -88,19 +99,21 @@ export function TopologyGraph({ nodes, links }: TopologyGraphProps) {
                                 d={`M ${src.x} ${src.y} C ${src.x} ${(src.y + tgt.y) / 2}, ${tgt.x} ${(src.y + tgt.y) / 2}, ${tgt.x} ${tgt.y}`}
                                 fill="none"
                                 stroke={isActive ? "url(#linkGradient)" : "#333"}
-                                strokeWidth={isActive ? 2 : 1}
+                                strokeWidth={isActive ? 2.5 : 1}
                                 strokeDasharray={isActive ? "none" : "4 4"}
                                 markerEnd={isActive ? "url(#arrowhead)" : ""}
+                                className={isActive ? "animate-pulse" : ""}
                             />
 
                             {/* Animated Particle for Active Links */}
                             {isActive && (
-                                <circle r="3" fill="#60a5fa">
+                                <circle r="3" fill="#00f3ff">
                                     <animateMotion
-                                        dur={`${3 - Math.min(2, link.value * 0.1)}s`}
+                                        dur={`${2.5 - Math.min(2, link.value * 0.1)}s`}
                                         repeatCount="indefinite"
                                         path={`M ${src.x} ${src.y} C ${src.x} ${(src.y + tgt.y) / 2}, ${tgt.x} ${(src.y + tgt.y) / 2}, ${tgt.x} ${tgt.y}`}
                                     />
+                                    <animate attributeName="r" values="2;4;2" dur="1s" repeatCount="indefinite" />
                                 </circle>
                             )}
 
@@ -108,12 +121,18 @@ export function TopologyGraph({ nodes, links }: TopologyGraphProps) {
                             <text
                                 x={(src.x + tgt.x) / 2}
                                 y={(src.y + tgt.y) / 2}
-                                fill="#666"
-                                fontSize="8"
+                                fill="#a3a3a3"
+                                fontSize="10"
                                 textAnchor="middle"
-                                dy="-5"
+                                dy="-8"
+                                className="font-mono"
                             >
-                                {link.value} SHP
+                                {isActive && (
+                                    <>
+                                        <tspan fill="#34d399">▲</tspan>
+                                        <tspan dx="2">{link.value} SHP</tspan>
+                                    </>
+                                )}
                             </text>
                         </g>
                     );
@@ -129,20 +148,20 @@ export function TopologyGraph({ nodes, links }: TopologyGraphProps) {
                             node.type === 'CUSTOMER' ? Store : Package;
 
                     const color = node.status === 'CRITICAL' ? '#ef4444' :
-                        node.status === 'BUSY' ? '#eab308' : '#10b981';
+                        node.status === 'BUSY' ? '#eab308' : '#34d399';
 
                     return (
                         <g key={node.id} transform={`translate(${pos.x}, ${pos.y})`}>
-                            {/* Glow */}
-                            <circle r="25" fill={color} fillOpacity="0.1" className="animate-pulse" />
+                            {/* Outer Glow Ring */}
+                            <circle r="35" fill="url(#nodeGlow)" opacity="0.2" className="animate-[pulse_3s_infinite]" />
+                            <circle r="30" fill="none" stroke={color} strokeWidth="1" strokeDasharray="4 2" className="animate-[spin_10s_linear_infinite]" opacity="0.4" />
+
+                            {/* Inner Glow */}
+                            <circle r="25" fill={color} fillOpacity="0.15" />
 
                             {/* Circle Base */}
                             <circle r="18" fill="#000" stroke={color} strokeWidth="2" />
 
-                            {/* Icon - centered via ForeignObject to use Lucide, or standard SVG Text? 
-                                Lucide components can't be directly inside SVG unless wrapped in foreignObject.
-                                Let's use simple SVG shapes or foreignObject.
-                            */}
                             <foreignObject x="-10" y="-10" width="20" height="20">
                                 <div className="flex items-center justify-center w-full h-full text-white">
                                     <Icon size={12} color={color} />
@@ -162,12 +181,15 @@ export function TopologyGraph({ nodes, links }: TopologyGraphProps) {
             </svg>
 
             {/* Legend / Overlay */}
-            <div className="absolute top-4 left-4 p-3 rounded-lg border border-white/10 bg-black/50 backdrop-blur text-[10px] text-neutral-400 font-mono">
-                <div className="mb-1 font-bold text-white uppercase tracking-wider">Network Topography</div>
+            <div className="absolute top-4 left-4 p-3 rounded-lg border border-white/10 bg-black/80 backdrop-blur text-[10px] text-neutral-400 font-mono shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                <div className="mb-2 font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                    <div className="h-1.5 w-1.5 bg-cyan-400 rounded-full animate-pulse" />
+                    Network Topography
+                </div>
                 <div className="flex gap-4">
-                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/20" /> Healthy</div>
-                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-yellow-500 bg-yellow-500/20" /> Busy</div>
-                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-red-500 bg-red-500/20" /> Critical</div>
+                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-emerald-500 bg-emerald-500/20 shadow-[0_0_5px_theme(colors.emerald.500)]" /> Healthy</div>
+                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-yellow-500 bg-yellow-500/20 shadow-[0_0_5px_theme(colors.yellow.500)]" /> Busy</div>
+                    <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full border border-red-500 bg-red-500/20 shadow-[0_0_5px_theme(colors.red.500)]" /> Critical</div>
                 </div>
             </div>
         </div>

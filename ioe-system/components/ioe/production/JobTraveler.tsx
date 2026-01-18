@@ -15,16 +15,10 @@ interface ProductionTask {
     priority: 'NORMAL' | 'HIGH' | 'CRITICAL';
 }
 
-const MOCK_TASKS: ProductionTask[] = [
-    { id: 'T-101', orderNumber: 'MO-1001', item: 'Widget A', operation: 'CNC Milling', qty: 50, completedQty: 12, status: 'IN_PROGRESS', duration: '00:45:12', priority: 'HIGH' },
-    { id: 'T-102', orderNumber: 'MO-1002', item: 'Widget B', operation: 'Assembly', qty: 200, completedQty: 0, status: 'PENDING', duration: '00:00:00', priority: 'NORMAL' },
-    { id: 'T-103', orderNumber: 'MO-1004', item: 'Chassis Frame', operation: 'Painting', qty: 10, completedQty: 0, status: 'PENDING', duration: '00:00:00', priority: 'CRITICAL' },
-];
-
 export function JobTraveler() {
     const [selectedWc, setSelectedWc] = useState('WC-01: Main Assembly');
-    const [tasks, setTasks] = useState(MOCK_TASKS);
-    const [activeTask, setActiveTask] = useState<ProductionTask | null>(MOCK_TASKS[0]);
+    const [tasks, setTasks] = useState<ProductionTask[]>([]);
+    const [activeTask, setActiveTask] = useState<ProductionTask | null>(null);
 
     const handleStart = (id: string) => {
         setTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'IN_PROGRESS' } : t));
@@ -90,8 +84,8 @@ export function JobTraveler() {
                                 key={task.id}
                                 onClick={() => setActiveTask(task)}
                                 className={`p-4 rounded-xl cursor-pointer transition-all border ${activeTask?.id === task.id
-                                        ? 'bg-blue-500/20 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
-                                        : 'bg-[#1E293B] border-white/5 hover:border-white/20'
+                                    ? 'bg-blue-500/20 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
+                                    : 'bg-[#1E293B] border-white/5 hover:border-white/20'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-2">
@@ -106,7 +100,7 @@ export function JobTraveler() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-sm">
                                         <div className={`h-2 w-2 rounded-full ${task.status === 'IN_PROGRESS' ? 'bg-amber-400 animate-pulse' :
-                                                task.status === 'COMPLETED' ? 'bg-green-400' : 'bg-slate-600'
+                                            task.status === 'COMPLETED' ? 'bg-green-400' : 'bg-slate-600'
                                             }`} />
                                         <span className="text-slate-300 font-medium">{task.status.replace('_', ' ')}</span>
                                     </div>

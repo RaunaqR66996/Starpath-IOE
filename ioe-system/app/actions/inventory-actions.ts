@@ -145,3 +145,23 @@ export async function executeReceipt(poNumber: string, warehouseId: string, loca
         return { success: false, error: e.message };
     }
 }
+
+export async function getInventoryStats() {
+    try {
+        const totalItems = await db.item.count();
+        // @ts-ignore
+        const lowStockItems = await db.inventory.count({
+            where: {
+                quantity: { lt: 10 }
+            }
+        });
+
+        return {
+            totalItems,
+            lowStockItems
+        };
+    } catch (error) {
+        console.error("Failed to get inventory stats:", error);
+        return { totalItems: 0, lowStockItems: 0 };
+    }
+}

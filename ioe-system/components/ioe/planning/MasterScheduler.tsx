@@ -5,21 +5,9 @@ import {
     MoreHorizontal, Filter, Download, Plus, Settings, Play, Database
 } from 'lucide-react';
 
-// Mock Data for "Authentic" Demo
-const WORK_CENTERS = [
-    { id: 'WC-01', name: 'CNC Milling A', type: 'MACHINING', tasks: [] },
-    { id: 'WC-02', name: 'CNC Milling B', type: 'MACHINING', tasks: [] },
-    { id: 'WC-03', name: 'Assembly Line 1', type: 'ASSEMBLY', tasks: [] },
-    { id: 'WC-04', name: 'Painting Booth', type: 'FINISHING', tasks: [] },
-];
-
-const MOCK_ORDERS = [
-    { id: 'MO-1001', item: 'Widget-A', qty: 500, status: 'Released', start: '2024-01-20', end: '2024-01-22' },
-    { id: 'MO-1002', item: 'Widget-B', qty: 1200, status: 'Planned', start: '2024-01-21', end: '2024-01-23' },
-    { id: 'MO-1003', item: 'Widget-C', qty: 300, status: 'In Progress', start: '2024-01-20', end: '2024-01-21' },
-    { id: 'MO-1004', item: 'Widget-A', qty: 800, status: 'Planned', start: '2024-01-23', end: '2024-01-25' },
-    { id: 'MO-1005', item: 'Widget-D', qty: 100, status: 'Planned', start: '2024-01-22', end: '2024-01-26' },
-];
+// Mock Data removed
+const WORK_CENTERS: any[] = [];
+const MOCK_ORDERS: any[] = [];
 
 import { importProductionPlan } from "@/app/actions/excel-import";
 import { useRef } from "react";
@@ -218,11 +206,12 @@ function LoadGraphView() {
         <div className="p-8 h-full flex items-center justify-center text-slate-500 flex-col gap-4">
             <div className="w-full max-w-4xl h-64 flex items-end justify-between gap-4 px-4 border-b border-l border-slate-700">
                 {/* Mock Bars */}
-                {[65, 82, 45, 92, 110, 75, 60, 55, 88, 95].map((h, i) => (
+                {/* No Data */}
+                {[].map((h, i) => (
                     <div key={i} className="w-full bg-slate-800 relative group">
                         <div
                             style={{ height: `${h}%` }}
-                            className={`w-full absolute bottom-0 transition-all duration-500 ${h > 100 ? 'bg-red-500' : h > 90 ? 'bg-amber-500' : 'bg-blue-600'}`}
+                            className="w-full absolute bottom-0 transition-all duration-500 bg-blue-600"
                         />
                         <div className="absolute -bottom-6 left-0 right-0 text-center text-[10px]">D{i + 1}</div>
                     </div>
