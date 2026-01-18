@@ -27,8 +27,8 @@ Moving beyond static spreadsheets, StarPath provides a pixel-perfect, 3-acre 3D 
 #### 2. 💸 Enterprise TMS & Financial Controller
 A high-fidelity logistics and resource management suite.
 - **Dispatcher Workbench**: Integrated Load Planner with dock scheduling and driver availability.
-- **Continuous Audit**: Automated freight bill audit comparing every invoice against actual shipment rates.
-- **ESG Native**: Real-time CO2 impact tracking and renewable energy ranking for every facility.
+- **Continuous Audit**: Automated freight bill rating and cost estimation for every shipment.
+- **ESG framework**: Built-in architecture for tracking CO2 impact and renewable energy usage metrics.
 
 ---
 
