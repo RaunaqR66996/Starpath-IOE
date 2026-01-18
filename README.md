@@ -1,55 +1,40 @@
-# 🌌 StarPath IOE: The Operating System for Physical Reality
+# StarPath IOE
 
-[![Strategic Superiority](https://img.shields.io/badge/Architecture-IOE--Unified-blueviolet?style=for-the-badge)](https://github.com/RaunaqR66996/Starpath-IOE)
-[![AI Engine](https://img.shields.io/badge/AI--Engine-FAR--Plutonium-cyan?style=for-the-badge)](https://github.com/RaunaqR66996/Starpath-IOE)
-[![Stack](https://img.shields.io/badge/Stack-Next.js--16--React--19-white?style=for-the-badge)](https://github.com/RaunaqR66996/Starpath-IOE)
-
-**StarPath IOE (Integrated Operations Environment)** is an AI-native operating system designed to unify logistics operations for U.S. supply chain resilience. It replaces fragmented legacy silos (ERP, WMS, TMS) with a unified **System of Reality**.
+StarPath IOE (Integrated Operations Environment) is an operating system designed to unify logistics operations. It replaces fragmented siloed systems (ERP, WMS, TMS) with a unified data environment.
 
 ![StarPath Interface](starpath_interface.png)
 
----
+## Overview
 
-## 🚀 The Vision: Beyond Records, Into Orchestration
+Traditional supply chain management creates information lag where ERPs, WMS, and TMS operate disconnected. StarPath creates a real-time data fabric for the operation.
 
-Traditional supply chain management suffers from the **"Latency Gap"**—a 24-48 hour information lag where ERPs, WMS, and TMS operate as isolated islands. StarPath collapses these silos into a single, real-time **Unified Data Fabric** for your entire operation.
+### Key Capabilities
 
-### Key Pillars of the IOE:
-
-#### 1. 🏗️ 3D Digital Twin (High-Fidelity Rendering)
-Moving beyond static spreadsheets, StarPath provides a pixel-perfect, 3-acre 3D visualization of your facility.
+**1. 3D Digital Twin**
+Provides a high-fidelity 3D visualization of the facility.
 - **Spatial Intelligence**: Real-time warehouse heatmaps and pick-path optimization.
-- **Hardware Agnostic**: Native integration with AMR (Autonomous Mobile Robots) and LiDAR telemetry.
-- **Asset Health**: Predictive maintenance tracking with MTBF monitoring.
+- **Hardware Agnostic**: Integration with AMR (Autonomous Mobile Robots) and LiDAR telemetry.
+- **Asset Health**: Predictive maintenance tracking.
 
-
-
-#### 2. 💸 Enterprise TMS & Financial Controller
-A high-fidelity logistics and resource management suite.
+**2. Enterprise TMS & Financial Controller**
+High-fidelity logistics and resource management suite.
 - **Dispatcher Workbench**: Integrated Load Planner with dock scheduling and driver availability.
 - **Continuous Audit**: Automated freight bill rating and cost estimation for every shipment.
-- **ESG framework**: Built-in architecture for tracking CO2 impact and renewable energy usage metrics.
+- **ESG Framework**: Architecture for tracking CO2 impact and renewable energy usage metrics.
 
----
+## Tech Stack
 
-## 🛠️ Tech Stack: The Modern Industrial Base
+- **Frontend**: Next.js 16, React 19, Tailwind CSS 4
+- **Visualization**: Three.js, React Three Fiber, Mapbox GL
+- **Backend**: Prisma ORM, Supabase/PostgreSQL
+- **State Management**: Zustand
+- **Animations**: Framer Motion
 
-Built with a "Google-inspired" engineering culture, the StarPath stack is designed for speed, scale, and resilience.
-
-- **Frontend**: [Next.js 16](https://nextjs.org/) (App Router), [React 19](https://react.dev/), [Tailwind CSS 4](https://tailwindcss.com/)
-- **Visualization**: [Three.js](https://threejs.org/) & [React Three Fiber](https://docs.pmnd.rs/react-three-fiber/) (3D), [Mapbox GL](https://www.mapbox.com/) (Logistics)
-- **Backend**: [Prisma](https://www.prisma.io/) ORM, [Supabase](https://supabase.com/)/PostgreSQL
-- **AI/ML**: Custom FAR (Fission Automated Reasoning) architecture
-- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-
----
-
-## 🏁 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- PostgreSQL instance (or Supabase)
+- PostgreSQL
 - Mapbox API Key
 
 ### Installation
@@ -78,25 +63,11 @@ Built with a "Google-inspired" engineering culture, the StarPath stack is design
    npm run prisma:seed
    ```
 
-5. **Launch Command Center**
+5. **Run Development Server**
    ```bash
    npm run dev
    ```
 
----
+## License
 
-## 🗺️ Roadmap: The Path to Q4 2026
-
-- [x] **Q1 2026**: "Execution & Visibility" MVP Launch
-- [ ] **Q2 2026**: Pilot deployment with mid-market 3PL partners
-- [ ] **Q3 2026**: Closing the loop on Inbound/Procurement
-- [ ] **Q4 2026**: General Availability & Intelligence Layer (Solver Integration)
-
----
-
-## 📄 License & Team
-
-**Founder**: [Raunaq Fardeen](https://github.com/RaunaqR66996)  
-Built with the goal of re-industrializing the American supply chain stack.
-
-
+This project is proprietary software. All rights reserved.
