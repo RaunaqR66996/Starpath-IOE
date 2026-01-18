@@ -6,7 +6,7 @@
 
 **StarPath IOE (Integrated Operations Environment)** is an AI-native operating system designed to unify logistics operations for U.S. supply chain resilience. It replaces fragmented legacy silos (ERP, WMS, TMS) with a unified **System of Reality**.
 
-![StarPath Hero Banner](starpath_hero_banner.png)
+![StarPath Interface](starpath_interface.png)
 
 ---
 
