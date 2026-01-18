@@ -12,12 +12,12 @@
 
 ## 🚀 The Vision: Beyond Records, Into Orchestration
 
-Traditional supply chain management suffers from the **"Latency Gap"**—a 24-48 hour information lag where ERPs, WMS, and TMS operate as isolated islands. StarPath collapses these silos into a single, real-time **Neural Pulse** for your entire operation.
+Traditional supply chain management suffers from the **"Latency Gap"**—a 24-48 hour information lag where ERPs, WMS, and TMS operate as isolated islands. StarPath collapses these silos into a single, real-time **Unified Data Fabric** for your entire operation.
 
 ### Key Pillars of the IOE:
 
-#### 1. 🏗️ 3D Digital Twin (VectorBrain)
-Stop looking at spreadsheets. StarPath provides a pixel-perfect, 3-acre 3D visualization of your facility.
+#### 1. 🏗️ 3D Digital Twin (High-Fidelity Rendering)
+Moving beyond static spreadsheets, StarPath provides a pixel-perfect, 3-acre 3D visualization of your facility.
 - **Spatial Intelligence**: Real-time warehouse heatmaps and pick-path optimization.
 - **Hardware Agnostic**: Native integration with AMR (Autonomous Mobile Robots) and LiDAR telemetry.
 - **Asset Health**: Predictive maintenance tracking with MTBF monitoring.
@@ -29,9 +29,9 @@ A global control tower inspired by military-grade operational frameworks.
 - **Risk Mitigation**: Autonomous inter-site transfer suggestions to prevent stockouts.
 
 #### 3. 🧠 Agentic AI (FAR Architecture)
-The **Plutonium Core**—our "Fission-Augmented Reasoning" engine—provides System 2 thinking for your supply chain.
+The **FAR Engine**—our "Fission-Augmented Reasoning" architecture—provides System 2 thinking for your supply chain.
 - **Chain Reaction Analysis**: Simulates downstream effects of every decision before execution.
-- **Multi-Agent Consensus**: Collaborative AI agents (The Drunk Party Protocol) filtered by a "Sober Judge" for hallucination-free reasoning.
+- **Multi-Agent Consensus**: Collaborative AI agents (utilizing Ensemble Debate) filtered by a "Consensus Arbiter" for hallucination-free reasoning.
 - **Deterministic Planning**: Finite-capacity APS engine that respects real-world constraints like machine health and labor shifts.
 
 #### 4. 💸 Enterprise TMS & Financial Controller
