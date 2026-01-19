@@ -42,6 +42,15 @@ Designed for performance, type-safety, and developer experience.
 
 
 
+- **State**: **Zustand** for transient, high-frequency state updates.
+
+## Current Status: Prototype
+
+This application is currently a **High-Fidelity Software Prototype**. While the visualization and logic engines are functional, full production deployment faces the following technical dependencies:
+
+*   **Hardware Barriers**: The "Digital Twin" currently relies on simulated telemetry. Operational deployment requires integration with physical **LiDAR arrays** and **V2X (Vehicle-to-Everything)** communication modules to drive the real-time 3D view.
+*   **Software Integration**: The system is designed to act as an orchestration layer. Final implementation requires the development of secure, low-latency **ERP Adaptors** (for SAP/Oracle) to replace the current standalone database architecture.
+
 ## License
 
 This project is proprietary software. All rights reserved.
