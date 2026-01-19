@@ -28,7 +28,7 @@ High-fidelity logistics and resource management suite.
 *   **Algorithmic Logistics**: Move beyond manual dispatching. Use intelligent load planning to optimize routes, assign drivers, and synchronize dock schedules to maximize asset utilization.
 *   **Industry 4.0 Ready**: A true "System of Reality" that ingests live telemetry from AMRs, LiDAR sensors, and forklifts, visualizing operations as they happen, not as they were planned.
 *   **Automated Revenue Protection**: Stop revenue leakage with continuous freight bill auditing. Instantly compare invoiced amounts against contracted rates to catch discrepancies.
-*   **Global Command Center**: A unified operational graph that visualizes your entire supply chain network—from supplier nodes to final mile dispatch—on an interactive, data-dense map.
+*   **Global Command Center**: A unified operational graph that visualizes your entire supply chain network from supplier nodes to final mile dispatch—on an interactive, data-dense map.
 
 ## Tech Stack
 
