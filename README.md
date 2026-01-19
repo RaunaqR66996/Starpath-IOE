@@ -42,7 +42,6 @@ Designed for performance, type-safety, and developer experience.
 
 
 
-- **State**: **Zustand** for transient, high-frequency state updates.
 
 ## Current Status: Prototype
 
